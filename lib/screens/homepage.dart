@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -184,8 +185,8 @@ Widget buildBanner(List<String> bannerImages) {
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(16),
                     ),
-                    child: Image.network(
-                      imageUrl,
+                    child: CachedNetworkImage(
+                      imageUrl : imageUrl,
                       width: 400,
                       height: 500,
                       fit: BoxFit.cover,

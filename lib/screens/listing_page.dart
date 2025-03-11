@@ -258,7 +258,8 @@ class _ListingPageState extends State<ListingPage> {
                             }
 
                             // Fetch offers for the new city
-                            setState(() {}); // Ensure this method is called to reload the page
+                            setState(
+                                () {}); // Ensure this method is called to reload the page
                           },
                         ),
                       ),
@@ -309,18 +310,29 @@ class _ListingPageState extends State<ListingPage> {
                     child: Stack(
                       children: [
                         Card(
-                          color: Colors.white,
-                          elevation: 5,
-                          shadowColor: Colors.grey.withOpacity(0.5),
-                          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                          
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(
+                              color: Colors.grey[400]!, // Border color
+                              width: 1.0, // Border width
+                            ),
+                          ),
+                          color: const Color.fromARGB(255, 255, 255, 255),
+                          elevation: 2,
+                          shadowColor: Colors.grey.withOpacity(0.8),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 8),
                           child: Padding(
-                            padding: const EdgeInsets.only(left: 14.0, right: 14, bottom: 14, top: 22),
+                            padding: const EdgeInsets.only(
+                                left: 14.0, right: 14, bottom: 14, top: 22),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
                                   children: [
-                                    if (item['image_url'] != null && item['image_url'].toString().isNotEmpty)
+                                    if (item['image_url'] != null &&
+                                        item['image_url'].toString().isNotEmpty)
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(8),
                                         child: Stack(
@@ -331,26 +343,36 @@ class _ListingPageState extends State<ListingPage> {
                                               width: 80,
                                               height: 80,
                                               fit: BoxFit.cover,
-                                              placeholder: (context, url) => Container(
+                                              placeholder: (context, url) =>
+                                                  Container(
                                                 width: 80,
                                                 height: 80,
-                                                color: Colors.grey[300], // Placeholder background
+                                                color: const Color.fromARGB(255, 235, 235, 235), // Placeholder background
                                                 child: const Center(
                                                   child: SizedBox(
                                                     width: 16, // Smaller size
                                                     height: 16, // Smaller size
-                                                    child: CircularProgressIndicator(
-                                                      strokeWidth: 2, // Thinner stroke
-                                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black), // Black color
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      strokeWidth:
+                                                          2, // Thinner stroke
+                                                      valueColor:
+                                                          AlwaysStoppedAnimation<
+                                                                  Color>(
+                                                              Colors
+                                                                  .black), // Black color
                                                     ),
                                                   ),
                                                 ),
                                               ),
-                                              errorWidget: (context, url, error) => Container(
+                                              errorWidget:
+                                                  (context, url, error) =>
+                                                      Container(
                                                 width: 80,
                                                 height: 80,
                                                 color: Colors.grey[300],
-                                                child: const Icon(Icons.error, color: Colors.red),
+                                                child: const Icon(Icons.error,
+                                                    color: Colors.red),
                                               ),
                                             ),
                                           ],
@@ -362,77 +384,124 @@ class _ListingPageState extends State<ListingPage> {
                                         height: 80,
                                         decoration: BoxDecoration(
                                           color: Colors.grey[300],
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                         ),
-                                        child: const Icon(Icons.image_not_supported, size: 30),
+                                        child: const Icon(
+                                            Icons.image_not_supported,
+                                            size: 30),
                                       ),
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(item['name'] ?? 'No Name',
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                              style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold)),
                                           if (item['description'] != null)
                                             Text(item['description'],
                                                 maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(fontSize: 12)),
-                                         
+                                                style: const TextStyle(
+                                                    fontSize: 12)),
                                           if (item['mobile'] != null)
-                                            Text('Mobile: ${item['mobile']}',
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(color: Colors.black, fontSize: 12)),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Text(
+                                                    'Mobile: ${item['mobile']}',
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                        color: Colors.black,
+                                                        fontSize: 12)),
+                                                Row(
+                                                  children: [
+                                                    Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment.end,
+                                                      children: [
+                                                        if (item['mobile'] !=
+                                                            null)
+                                                          GestureDetector(
+                                                            onTap: () {
+                                                              makeCall(item[
+                                                                  'mobile']);
+                                                            },
+                                                            child: Icon(
+                                                                Icons.call,
+                                                                color:
+                                                                    Colors.blue,
+                                                                size: 24),
+                                                          ),
+                                                        const SizedBox(
+                                                            width: 10),
+                                                        if (item['whatsapp'] !=
+                                                                null &&
+                                                            item['whatsapp']
+                                                                .isNotEmpty)
+                                                          GestureDetector(
+                                                            onTap: () {
+                                                              openWhatsApp(
+                                                                  context,
+                                                                  item[
+                                                                      'whatsapp']);
+                                                            },
+                                                            child: Icon(
+                                                                Icons.chat,
+                                                                color: Colors
+                                                                    .green,
+                                                                size: 24),
+                                                          ),
+                                                        const SizedBox(
+                                                            width: 10),
+                                                        GestureDetector(
+                                                          onTap: () {
+                                                            if (item['name'] !=
+                                                                    null &&
+                                                                item['description'] !=
+                                                                    null &&
+                                                                item['mobile'] !=
+                                                                    null) {
+                                                              shareDetails(
+                                                                  item['name'],
+                                                                  item[
+                                                                      'description'],
+                                                                  item[
+                                                                      'mobile']);
+                                                            } else {
+                                                              ScaffoldMessenger
+                                                                      .of(context)
+                                                                  .showSnackBar(
+                                                                const SnackBar(
+                                                                    content: Text(
+                                                                        'Unable to share. Missing item details.')),
+                                                              );
+                                                            }
+                                                          },
+                                                          child: Icon(
+                                                              Icons.share,
+                                                              color: const Color
+                                                                  .fromARGB(255,
+                                                                  242, 222, 38),
+                                                              size: 24),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                )
+                                              ],
+                                            ),
                                         ],
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 14),
-                                Row(
-                                  children: [
-                                    ActionButton(
-                                      label: 'Call',
-                                      color: Colors.blue,
-                                      iconPath: 'asset/call.png',
-                                      onTap: () {
-                                        if (item['mobile'] != null) {
-                                          makeCall(item['mobile']);
-                                        }
-                                      },
-                                    ),
-                                    const SizedBox(width: 10),
-                                    ActionButton(
-                                      label: 'WhatsApp',
-                                      color: Colors.green,
-                                      iconPath: 'asset/whatsapp.png',
-                                      onTap: () {
-                                        if (item['whatsapp'] != null && item['whatsapp'].isNotEmpty) {
-                                          openWhatsApp(context, item['whatsapp']);
-                                        } else {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text('WhatsApp is not available for this number')),
-                                          );
-                                        }
-                                      },
-                                    ),
-                                    const SizedBox(width: 10),
-                                    ActionButton(
-                                      label: 'Share',
-                                      color: const Color.fromARGB(255, 242, 222, 38),
-                                      iconPath: 'asset/share.png',
-                                      onTap: () {
-                                        if (item['name'] != null && item['description'] != null && item['mobile'] != null) {
-                                          shareDetails(item['name'], item['description'], item['mobile']);
-                                        } else {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text('Unable to share. Missing item details.')),
-                                          );
-                                        }
-                                      },
                                     ),
                                   ],
                                 ),
@@ -445,19 +514,25 @@ class _ListingPageState extends State<ListingPage> {
                             top: 8,
                             right: 8,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 1),
                               decoration: const BoxDecoration(
                                 color: Colors.green,
-                                borderRadius: BorderRadius.only(topRight: Radius.circular(5)),
+                                borderRadius: BorderRadius.only(
+                                    topRight: Radius.circular(5)),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: const [
-                                  Icon(Icons.check, color: Colors.white, size: 16),
+                                  Icon(Icons.check,
+                                      color: Colors.white, size: 16),
                                   SizedBox(width: 4),
                                   Text(
-                                    'Onshop Discount Card Accepted',
-                                    style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                    'Discount Card Accepted',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),

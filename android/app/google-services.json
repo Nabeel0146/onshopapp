@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "676046608509",
+    "project_id": "onshop-f003f",
+    "storage_bucket": "onshop-f003f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:676046608509:android:3f6d4cc8ef6a201484f914",
+        "android_client_info": {
+          "package_name": "com.example.adminonshopapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZ3MSFQMNH2fgffG4h3v8exYnC-kU_e4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:676046608509:android:abb7bcef3a51b3d484f914",
+        "android_client_info": {
+          "package_name": "com.example.onshopapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZ3MSFQMNH2fgffG4h3v8exYnC-kU_e4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:676046608509:android:96ebbafe3259402884f914",
+        "android_client_info": {
+          "package_name": "com.onshopin.onshopapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZ3MSFQMNH2fgffG4h3v8exYnC-kU_e4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

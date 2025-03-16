@@ -13,6 +13,7 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final _nameController = TextEditingController();
   final _mobileController = TextEditingController();
+  final _addressController = TextEditingController(); // Added for address
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
 
@@ -71,7 +72,9 @@ class _RegisterPageState extends State<RegisterPage> {
           'name': _nameController.text.trim(),
           'mobile': _mobileController.text.trim(),
           'city': _selectedCity,
+          'address': _addressController.text.trim(), // Added address field
           'email': user.email ?? 'anonymous',
+          'createdAt': FieldValue.serverTimestamp(), // Added timestamp
         });
 
         ScaffoldMessenger.of(context)
@@ -103,7 +106,7 @@ class _RegisterPageState extends State<RegisterPage> {
               // Logo
               Center(
                 child: Image.asset(
-                  'asset/finallogo.jpg',
+                  'asset/onshopnewcurvedlogo.png',
                   height: 250,
                   width: 250,
                   fit: BoxFit.contain,
@@ -116,6 +119,15 @@ class _RegisterPageState extends State<RegisterPage> {
                 decoration: InputDecoration(
                   labelText: 'Full Name',
                   border: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.black), // Black border
+                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.black), // Black border when focused
+                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.black), // Black border when enabled
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
@@ -127,13 +139,20 @@ class _RegisterPageState extends State<RegisterPage> {
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
                   labelText: 'Mobile Number',
-                  border: OutlineInputBorder(
+                  border: OutlineInputBorder(borderSide: const BorderSide(color: Colors.black), // Black border
+                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.black), // Black border when focused
+                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.black), // Black border when enabled
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                 ),
               ),
               const SizedBox(height: 20),
-              // Searchable City Dropdown
               DropdownSearch<String>(
                 items: _cities..sort(),
                 selectedItem: _selectedCity,
@@ -150,7 +169,17 @@ class _RegisterPageState extends State<RegisterPage> {
                   searchFieldProps: TextFieldProps(
                     decoration: InputDecoration(
                       hintText: "Search city...",
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderSide: const BorderSide(color: Colors.black), // Black border
+                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.black), // Black border when focused
+                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.black), // Black border when enabled
+                      ),
                     ),
                   ),
                 ),
@@ -160,7 +189,29 @@ class _RegisterPageState extends State<RegisterPage> {
                   });
                 },
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
+              // Address field
+              TextField(
+                controller: _addressController,
+                decoration: InputDecoration(
+                  labelText: 'Delivery Address',
+                  border: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.black), // Black border
+                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.black), // Black border when focused
+                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.black), // Black border when enabled
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Searchable City Dropdown
+              
               // Register button
               SizedBox(
                 width: double.infinity,

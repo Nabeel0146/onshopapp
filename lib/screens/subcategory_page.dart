@@ -40,15 +40,16 @@ class SubcategoryGridPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent, // Make the AppBar background transparent
-        toolbarHeight: 80,
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.transparent, // Transparent to allow gradient
+        toolbarHeight: 70,
         elevation: 0, // Remove shadow if not needed
         flexibleSpace: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
                 Color.fromARGB(255, 255, 185, 41), // Yellow at the top
-                Color.fromARGB(255, 255, 237, 201), // Lighter yellow at the bottom
+                Colors.white, // White at the bottom
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -60,8 +61,7 @@ class SubcategoryGridPage extends StatelessWidget {
               children: [
                 const SizedBox(width: 15),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(8), // Optional: Add rounded corners to the logo
-                  child: Image.asset("asset/appbarlogo.png", width: 50),
+                  child: Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -80,7 +80,6 @@ class SubcategoryGridPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 10),
               ],
             ),
           ),

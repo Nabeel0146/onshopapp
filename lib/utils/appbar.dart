@@ -77,7 +77,7 @@ class AppBarContent extends StatelessWidget {
             const SizedBox(width: 16),
             ClipRRect(
               child: Image.asset(
-                "asset/appbarlogo.png",
+                "asset/onshopnewcurvedlogo.png",
                 width: 60,
               ),
             ),

@@ -20,10 +20,14 @@ class _ShopEditPageState extends State<ShopEditPage> {
   final TextEditingController mobileController = TextEditingController();
   final TextEditingController whatsappController = TextEditingController();
 
+  List<String> categories = [];
+  String? selectedCategory;
+
   @override
   void initState() {
     super.initState();
     _fetchShopDocument();
+    _fetchCategories();
   }
 
   Future<void> _fetchShopDocument() async {
@@ -50,6 +54,21 @@ class _ShopEditPageState extends State<ShopEditPage> {
       }
     } catch (e) {
       print("Error fetching shop document: $e");
+    }
+  }
+
+  Future<void> _fetchCategories() async {
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('productcategories')
+          .get();
+
+      List<String> fetchedCategories = querySnapshot.docs.map((doc) => doc['name'] as String).toList();
+      setState(() {
+        categories = fetchedCategories;
+      });
+    } catch (e) {
+      print("Error fetching categories: $e");
     }
   }
 
@@ -84,6 +103,7 @@ class _ShopEditPageState extends State<ShopEditPage> {
     TextEditingController imageUrlController = TextEditingController(text: productData['image_url']);
     TextEditingController priceController = TextEditingController(text: productData['price']?.toString() ?? '');
     TextEditingController discountedPriceController = TextEditingController(text: productData['discountedprice']?.toString() ?? '');
+    String? selectedCategory = productData['category'];
 
     showDialog(
       context: context,
@@ -98,6 +118,21 @@ class _ShopEditPageState extends State<ShopEditPage> {
               _buildTextField("Image URL", imageUrlController),
               _buildTextField("Price", priceController, isNumeric: true),
               _buildTextField("Discounted Price", discountedPriceController, isNumeric: true),
+              DropdownButton<String>(
+                value: selectedCategory,
+                hint: Text("Select Category"),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedCategory = newValue;
+                  });
+                },
+                items: categories.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
             ],
           ),
           actions: [
@@ -113,6 +148,7 @@ class _ShopEditPageState extends State<ShopEditPage> {
                   'image_url': imageUrlController.text,
                   'price': priceController.text.isNotEmpty ? int.tryParse(priceController.text) : null,
                   'discountedprice': discountedPriceController.text.isNotEmpty ? int.tryParse(discountedPriceController.text) : null,
+                  'category': selectedCategory,
                 });
                 Navigator.pop(context);
               },
@@ -130,6 +166,7 @@ class _ShopEditPageState extends State<ShopEditPage> {
     TextEditingController imageUrlController = TextEditingController();
     TextEditingController priceController = TextEditingController();
     TextEditingController discountedPriceController = TextEditingController();
+    String? selectedCategory;
 
     showDialog(
       context: context,
@@ -144,6 +181,21 @@ class _ShopEditPageState extends State<ShopEditPage> {
               _buildTextField("Image URL", imageUrlController),
               _buildTextField("Price", priceController, isNumeric: true),
               _buildTextField("Discounted Price", discountedPriceController, isNumeric: true),
+              DropdownButton<String>(
+                value: selectedCategory,
+                hint: Text("Select Category"),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedCategory = newValue;
+                  });
+                },
+                items: categories.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+              ),
             ],
           ),
           actions: [
@@ -153,6 +205,10 @@ class _ShopEditPageState extends State<ShopEditPage> {
             ),
             ElevatedButton(
               onPressed: () async {
+                if (selectedCategory == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please select a category")));
+                  return;
+                }
                 await FirebaseFirestore.instance.collection('products').add({
                   'shopid': widget.shopId,
                   'name': nameController.text,
@@ -160,6 +216,10 @@ class _ShopEditPageState extends State<ShopEditPage> {
                   'image_url': imageUrlController.text,
                   'price': priceController.text.isNotEmpty ? int.tryParse(priceController.text) : null,
                   'discountedprice': discountedPriceController.text.isNotEmpty ? int.tryParse(discountedPriceController.text) : null,
+                  'city': shopDetails?['city'] ?? '',
+                  'display': true,
+                  'category': selectedCategory,
+                  'whatsappnumber': shopDetails?['whatsapp'] ?? '',
                 });
                 Navigator.pop(context);
               },
@@ -175,9 +235,9 @@ class _ShopEditPageState extends State<ShopEditPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Edit Shop')),
-      body: shopDetails == null
+      body: shopDetails == null || categories.isEmpty
           ? Center(child: CircularProgressIndicator()) // Show loader while fetching data
-          : Padding(
+          : SingleChildScrollView(
               padding: EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,7 +265,7 @@ class _ShopEditPageState extends State<ShopEditPage> {
                     ],
                   ),
 
-                  Expanded(child: _buildProductList()),
+                  _buildProductList(),
                 ],
               ),
             ),
@@ -241,6 +301,8 @@ class _ShopEditPageState extends State<ShopEditPage> {
         var products = snapshot.data!.docs;
 
         return ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
           itemCount: products.length,
           itemBuilder: (context, index) {
             var product = products[index].data() as Map<String, dynamic>;
@@ -257,6 +319,7 @@ class _ShopEditPageState extends State<ShopEditPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(product['description'] ?? ''),
+                    Text(product['category'] ?? ''),
                     if (product['price'] != null) Text("Price: ${product['price']}"),
                     if (product['discountedprice'] != null) Text("Discounted Price: ${product['discountedprice']}"),
                   ],

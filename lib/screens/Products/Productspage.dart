@@ -140,7 +140,8 @@ class _ProductsPageState extends State<ProductsPage> {
               children: [
                 const SizedBox(width: 45),
                 ClipRRect(
-                  child: Image.asset("asset/appbarlogo.png", width: 50),
+                  child:
+                      Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -230,7 +231,8 @@ class _ProductsPageState extends State<ProductsPage> {
         child: FutureBuilder<void>(
           future: _initializationFuture,
           builder: (context, initializationSnapshot) {
-            if (initializationSnapshot.connectionState != ConnectionState.done) {
+            if (initializationSnapshot.connectionState !=
+                ConnectionState.done) {
               return const Center(child: CircularProgressIndicator());
             }
             return FutureBuilder<List<Map<String, dynamic>>>(
@@ -239,114 +241,155 @@ class _ProductsPageState extends State<ProductsPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-        
+
                 if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
-        
+
                 final items = snapshot.data ?? [];
-        
+
                 if (items.isEmpty) {
                   return const Center(
                     child: Text('No items found for this category.',
-                        style:
-                            TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
                   );
                 }
-        
+
                 return GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     crossAxisSpacing: 8,
                     mainAxisSpacing: 8,
+                    childAspectRatio:
+                        0.54, // Adjust this value to give more height to each grid item
                   ),
                   itemCount: items.length,
-                 itemBuilder: (context, index) {
-          final item = items[index];
-          return Container(
-            decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.grey, // You can change the border color as needed
-          width: 0.5, // Set the border width to 0.5
-        ),
-        borderRadius: BorderRadius.circular(8), // Optional: Add rounded corners
-            ),
-            child: Card(
-        elevation: 0, // Remove the default shadow if you want a flat look
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8), // Ensure the Card has rounded corners
-        ),
-        child: Column(
-          children: [
-            if (item['image_url'] != null && item['image_url'].toString().isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: AspectRatio(
-                  aspectRatio: 4 / 4,
-                  child: CachedNetworkImage(
-                    imageUrl: item['image_url'],
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey[300],
-                      child: const Center(
-                        child: CircularProgressIndicator(),
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    return Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Colors
+                              .grey, // You can change the border color as needed
+                          width: 0.5, // Set the border width to 0.5
+                        ),
+                        borderRadius: BorderRadius.circular(
+                            8), // Optional: Add rounded corners
                       ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.error),
-                    ),
-                  ),
-                ),
-              )
-            else
-              AspectRatio(
-                aspectRatio: 3 / 3,
-                child: Container(
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.image_not_supported),
-                ),
-              ),
-            const SizedBox(height: 8),
-            Text(
-              item['product_name'] ?? 'No Name',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              item['product_description'] ?? 'No Description',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Price: ${item['price'] ?? 'N/A'}',
-              style: const TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: () {
-                if (item['whatsapp_number'] != null) {
-                  _openWhatsApp(item['whatsapp_number']);
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text('Order on Whatsapp', style: TextStyle(color: Colors.white),),
-            ),
-          ],
-        ),
-            ),
-          );
-        },
+                      child: Card(
+                        elevation:
+                            0, // Remove the default shadow if you want a flat look
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                              8), // Ensure the Card has rounded corners
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (item['image_url'] != null &&
+                                item['image_url'].toString().isNotEmpty)
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: AspectRatio(
+                                  aspectRatio: 4 / 4,
+                                  child: CachedNetworkImage(
+                                    imageUrl: item['image_url'],
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => Container(
+                                      color: Colors.grey[300],
+                                      child: const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        Container(
+                                      color: Colors.grey[300],
+                                      child: const Icon(Icons.error),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              AspectRatio(
+                                aspectRatio: 3 / 3,
+                                child: Container(
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.image_not_supported),
+                                ),
+                              ),
+                            const SizedBox(height: 8),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Text(
+                                item['name'] ?? 'No Name',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Text(
+                                item['description'] ?? 'No Description',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Text(
+                                '₹${item['price'] ?? 'N/A'}',
+                                style: const TextStyle(fontSize: 20),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Text(
+                                'MRP ₹${item['discountedprice'] ?? 'N/A'}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  decoration: TextDecoration
+                                      .lineThrough, // Add strikethrough
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 2.0),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  if (item['whatsappnumber'] != null) {
+                                    _openWhatsApp(item['whatsappnumber']);
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Order on Whatsapp',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             );

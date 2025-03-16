@@ -8,6 +8,7 @@ import 'package:onshopapp/screens/searchresults.dart';
 import 'package:onshopapp/utils/appbar.dart';
 import 'package:onshopapp/utils/sidebar.dart';
 import 'package:onshopapp/widgets/widgets.dart';
+import 'package:shimmer/shimmer.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -229,17 +230,16 @@ Widget buildBanner(List<String> bannerImages) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSearchButton(),
-          const SizedBox(height: 10),
-          _buildProductCategories(), // New section for scrollable rectangles
+            const SizedBox(height: 10),
+            _buildProductCategories(), // New section for scrollable rectangles
             const SizedBox(height: 26),
             buildBanner(bannerImages),
             const SizedBox(height: 26),
-
             _buildCategoryTiles(),
             const SizedBox(height: 16),
             _buildOtherCategories(),
-            const SizedBox(height: 10,),
-            _buildAdsSection()
+            const SizedBox(height: 10),
+            _buildAdsSection(),
           ],
         ),
       ),
@@ -317,6 +317,7 @@ Widget buildBanner(List<String> bannerImages) {
     },
   );
 }
+
 Widget _buildProductCategories() {
   return FutureBuilder<QuerySnapshot>(
     future: FirebaseFirestore.instance.collection('productcategories').get(),
@@ -338,7 +339,7 @@ Widget _buildProductCategories() {
       final categories = snapshot.data!.docs;
 
       return SizedBox(
-        height: 75,
+        height: 75, // Fixed height for the scrollable section
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           itemCount: categories.length,
@@ -369,11 +370,35 @@ Widget _buildProductCategories() {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       imageUrl != null && imageUrl.isNotEmpty
-                          ? Image.network(
-                              imageUrl,
+                          ? CachedNetworkImage(
+                              imageUrl: imageUrl,
                               width: 42,
                               height: 42,
                               fit: BoxFit.cover,
+                              placeholder: (context, url) => Shimmer.fromColors(
+                                baseColor: Colors.grey[300]!,
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Shimmer.fromColors(
+                                baseColor: Colors.grey[300]!,
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
                             )
                           : const Icon(Icons.category, size: 32),
                       const SizedBox(height: 4),

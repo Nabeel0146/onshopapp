@@ -185,26 +185,30 @@ class ShopProfilePage extends StatelessWidget {
                       }
 
                       return GridView.builder(
-  shrinkWrap: true,
-  physics: const NeverScrollableScrollPhysics(),
-  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-    crossAxisCount: 2, // Keeps 2 items per row
-    crossAxisSpacing: 12, // Increases horizontal spacing
-    mainAxisSpacing: 12, // Increases vertical spacing
-    childAspectRatio: 0.7, // Decrease this value to make items taller
-  ),
-  itemCount: snapshot.data!.docs.length,
-  itemBuilder: (context, index) {
-    final product = snapshot.data!.docs[index].data() as Map<String, dynamic>;
-    return _buildProductCard(
-      product['name'] ?? 'No Name',
-      product['price'] ?? 0,
-      product['discountedprice'] ?? 0,
-      product['image_url'] ?? 'https://via.placeholder.com/150',
-      shopData['whatsapp'] ?? '',
-    );
-  },
-);
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2, // Keeps 2 items per row
+                          crossAxisSpacing: 12, // Increases horizontal spacing
+                          mainAxisSpacing: 12, // Increases vertical spacing
+                          childAspectRatio:
+                              0.57, // Decrease this value to make items taller
+                        ),
+                        itemCount: snapshot.data!.docs.length,
+                        itemBuilder: (context, index) {
+                          final product = snapshot.data!.docs[index].data()
+                              as Map<String, dynamic>;
+                          return _buildProductCard(
+                            product['name'] ?? 'No Name',
+                            product['price'] ?? 0,
+                            product['discountedprice'] ?? 0,
+                            product['image_url'] ??
+                                'https://via.placeholder.com/150',
+                            shopData['whatsapp'] ?? '',
+                          );
+                        },
+                      );
                     },
                   ),
                 ],
@@ -295,69 +299,109 @@ class ShopProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildProductCard(String name, int price, int discountedprice,
-      String imageUrl, String whatsappNumber) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                placeholder: (context, url) =>
-                    const Center(child: CircularProgressIndicator()),
-                errorWidget: (context, url, error) => const Icon(
+ Widget _buildProductCard(String name, int price, int discountedprice, String imageUrl, String whatsappNumber) {
+  return Container(
+    decoration: BoxDecoration(
+      border: Border.all(
+        color: Colors.grey, // Border color
+        width: 0.5, // Border width
+      ),
+      borderRadius: BorderRadius.circular(8), // Rounded corners
+    ),
+    child: Card(
+      elevation: 0, // Flat look
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8), // Rounded corners
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Image
+          if (imageUrl.isNotEmpty)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: AspectRatio(
+                aspectRatio: 4 / 4,
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey[300],
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                  errorWidget: (context, url, error) => const Icon(
                     Icons.image_not_supported,
                     size: 40,
-                    color: Colors.grey),
-                fit: BoxFit.cover,
-                width: double.infinity,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(name,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-            if (discountedprice > 0)
-              Text('₹$discountedprice',
-                  style: const TextStyle(
-                      color: Color.fromARGB(255, 7, 170, 13),
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold)),
-            if (price > 0)
-              Text('MRP ₹$price',
-                  style: const TextStyle(
-                      decoration: TextDecoration.lineThrough, fontSize: 12)),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 30,
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 50),
-                  backgroundColor: Color.fromARGB(255, 9, 190, 57),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                        7), // Adjust the radius for roundness
+                    color: Colors.grey,
                   ),
                 ),
-                onPressed: () {
-                  String productDetails =
-                      "Name: $name\nPrice: ₹$price\nDiscounted Price: ₹$discountedprice";
-                  String whatsappUrl =
-                      "https://wa.me/$whatsappNumber?text=${Uri.encodeComponent(productDetails)}";
-                  launchUrl(Uri.parse(whatsappUrl));
-                },
-                child: const Text("Order Now", style: TextStyle(color: Colors.white),),
+              ),
+            )
+          else
+            AspectRatio(
+              aspectRatio: 3 / 3,
+              child: Container(
+                color: Colors.grey[300],
+                child: const Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
               ),
             ),
-          ],
-        ),
+          const SizedBox(height: 8),
+
+          // Product Name
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              name,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 2),
+
+          // Product Price
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              '₹$price',
+              style: const TextStyle(fontSize: 20),
+            ),
+          ),
+          const SizedBox(height: 2),
+
+          // Discounted Price
+          if (discountedprice > 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                'MRP ₹$discountedprice',
+                style: const TextStyle(fontSize: 14, decoration: TextDecoration.lineThrough),
+              ),
+            ),
+          const SizedBox(height: 4),
+
+          // Order Now Button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2.0),
+            child: ElevatedButton(
+              onPressed: () {
+                String productDetails = "Name: $name\nPrice: ₹$price\nDiscounted Price: ₹$discountedprice";
+                String whatsappUrl = "https://wa.me/$whatsappNumber?text=${Uri.encodeComponent(productDetails)}";
+                launchUrl(Uri.parse(whatsappUrl));
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                "Order Now",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

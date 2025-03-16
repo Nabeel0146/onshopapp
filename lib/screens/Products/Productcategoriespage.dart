@@ -42,7 +42,7 @@ class ProductCategoriesPage extends StatelessWidget {
               children: [
                 const SizedBox(width: 15),
                 ClipRRect(
-                  child: Image.asset("asset/appbarlogo.png", width: 50),
+                  child: Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -171,11 +171,31 @@ class ProductCategoriesPage extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 imageUrl != null && imageUrl.isNotEmpty
-                                    ? Image.network(
-                                        imageUrl,
+                                    ? CachedNetworkImage(
+                                        imageUrl: imageUrl,
                                         width: 64,
                                         height: 64,
                                         fit: BoxFit.cover,
+                                        placeholder: (context, url) => Shimmer.fromColors(
+                                          baseColor: Colors.grey[200]!,
+                                          highlightColor: Colors.grey[100]!,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                        ),
+                                        errorWidget: (context, url, error) => Shimmer.fromColors(
+                                          baseColor: Colors.grey[200]!,
+                                          highlightColor: Colors.grey[100]!,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                        ),
                                       )
                                     : const Icon(Icons.category, size: 64),
                                 const SizedBox(height: 8.0),

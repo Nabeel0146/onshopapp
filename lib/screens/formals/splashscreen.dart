@@ -7,34 +7,72 @@ import 'package:onshopapp/screens/homepage.dart';
 import 'package:onshopapp/screens/register.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
+  late AnimationController _slideController;
+  late Animation<Offset> _slideAnimation;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+  late AnimationController _zoomController;
+  late Animation<double> _zoomAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    // Initialize animation controller
-    _controller = AnimationController(
+    // Initialize slide animation controller
+    _slideController = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 1),
+      duration: const Duration(milliseconds: 500),
     );
 
-    // Define scale animation
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOut,
-      ),
+    // Create slide animation from bottom to center
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 1.0), // Start from the bottom
+      end: Offset.zero,              // End at the center
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Initialize fade animation controller
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
     );
 
-    // Start animation
-    _controller.forward();
+    // Create fade animation
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Initialize zoom animation controller
+    _zoomController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    // Create zoom animation
+    _zoomAnimation = Tween<double>(
+      begin: 1.0,
+      end: 50.5,
+    ).animate(CurvedAnimation(
+      parent: _zoomController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Start animations immediately
+    _slideController.forward();
+    _fadeController.forward();
 
     // Initialize Firebase and check login status
     _initializeApp();
@@ -46,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       await Firebase.initializeApp();
 
       // Check user login status after a delay
-      Timer(Duration(seconds: 2), _checkUserLoginStatus);
+      Timer(Duration(seconds: 3), _checkUserLoginStatus);
     } catch (e) {
       // Handle Firebase initialization error
       print('Firebase initialization error: $e');
@@ -57,17 +95,21 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   void _checkUserLoginStatus() {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      // Navigate to HomePage if logged in
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MainScreen()),
-      );
+      // Start zoom animation before navigating to HomePage
+      _zoomController.forward().whenComplete(() {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MainScreen()),
+        );
+      });
     } else {
-      // Navigate to RegisterPage if not logged in
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => RegisterPage()),
-      );
+      // Start zoom animation before navigating to RegisterPage
+      _zoomController.forward().whenComplete(() {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => RegisterPage()),
+        );
+      });
     }
   }
 
@@ -91,39 +133,50 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   @override
   void dispose() {
-    _controller.dispose(); // Dispose animation controller
+    _slideController.dispose();
+    _fadeController.dispose();
+    _zoomController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Background image
-          Image.asset(
-            'asset/ssbackground.jpg',
-            fit: BoxFit.cover,
-          ),
-          // Centered logo with zoom animation
-          Center(
-            child: AnimatedBuilder(
-              animation: _scaleAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _scaleAnimation.value,
-                  child: child,
-                );
-              },
-              child: Image.asset(
-                'asset/appbarlogo.png', // Logo image
-                width: 200,
-                height: 200,
+      body: Container(
+        color: Colors.amber, // Amber background color
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SlideTransition(
+                position: _slideAnimation,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: ScaleTransition(
+                    scale: _zoomAnimation,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(26),
+                      ),
+                      child: Column(
+                        children: [
+                          Image.asset(
+                            'asset/onshopcurvedlogo.jpg', // Logo image
+                            width: 200,
+                            height: 200,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 20),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

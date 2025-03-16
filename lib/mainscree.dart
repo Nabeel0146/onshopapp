@@ -59,26 +59,30 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildNavItem(String assetImage, String label, int index) {
-    return GestureDetector(
+    return InkWell(
       onTap: () => _onItemTapped(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Image.asset(
-            assetImage,
-            width: 24,
-            height: 24,
-            color: _selectedIndex == index ? Colors.black : const Color.fromARGB(255, 105, 105, 105),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: _selectedIndex == index ? Colors.black : Color.fromARGB(255, 105, 105, 105),
-              fontSize: 12,
+      child: Container(
+        height: double.infinity,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              assetImage,
+              width: 24,
+              height: 24,
+              color: _selectedIndex == index ? Colors.black : const Color.fromARGB(255, 105, 105, 105),
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: _selectedIndex == index ? Colors.black : Color.fromARGB(255, 105, 105, 105),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

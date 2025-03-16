@@ -106,61 +106,91 @@ class _ListingPageState extends State<ListingPage> {
   }
 
   Future<void> _checkCustomerID(Map<String, dynamic> item) async {
-    if (item['associate'] == true) {
-      if (item['lock'] == true) {
-        String? customerID;
-        await showDialog<String>(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Enter Customer ID'),
-              content: TextField(
-                autofocus: true,
-                decoration: const InputDecoration(hintText: 'Customer ID'),
-                onChanged: (value) {
-                  customerID = value;
-                },
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, customerID),
-                  child: const Text('Submit'),
-                ),
+  if (item['associate'] == true) {
+    if (item['lock'] == true) {
+      String? customerID;
+      await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Column(
+              children: [
+                const Text('Enter Shop ID'),
+                Text("Enter the shop id to view Business Profile", style: TextStyle(fontSize: 14),)
               ],
-            );
-          },
-        );
-
-        if (customerID != null) {
-          // Check if the customerID matches the one in the item's document
-          if (item['customerid'] == customerID) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ShopProfilePage(shopData: item),
+            ),
+            content: TextField(
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: 'Shop ID',
+                border: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.black), // Black border
+                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.black), // Black border when focused
+                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.black), // Black border when enabled
+                  borderRadius: BorderRadius.circular(8),
+                 
+                ),
               ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Invalid Customer ID')),
-            );
-          }
+              onChanged: (value) {
+                customerID = value;
+              },
+            ),
+            actions: <Widget>[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, customerID),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green, // Green background
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8), // Rounded corners
+                    ),
+                  ),
+                  child: const Text('Submit', style: TextStyle(color: Colors.white),),
+                ),
+              ),
+            ],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16), // Curved corners for the dialog
+            ),
+            backgroundColor: Colors.white, // White background for the dialog
+          );
+        },
+      );
+
+      if (customerID != null) {
+        // Check if the customerID matches the one in the item's document
+        if (item['customerid'] == customerID) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ShopProfilePage(shopData: item),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Invalid Customer ID')),
+          );
         }
-      } else {
-        // Directly navigate to ShopProfilePage if 'lock' is false
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ShopProfilePage(shopData: item),
-          ),
-        );
       }
+    } else {
+      // Directly navigate to ShopProfilePage if 'lock' is false
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ShopProfilePage(shopData: item),
+        ),
+      );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +216,7 @@ class _ListingPageState extends State<ListingPage> {
               children: [
                 const SizedBox(width: 45),
                 ClipRRect(
-                  child: Image.asset("asset/appbarlogo.png", width: 50),
+                  child: Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -436,11 +466,7 @@ class _ListingPageState extends State<ListingPage> {
                                                               makeCall(item[
                                                                   'mobile']);
                                                             },
-                                                            child: Icon(
-                                                                Icons.call,
-                                                                color:
-                                                                    Colors.blue,
-                                                                size: 24),
+                                                            child: Image.asset("asset/phone-call.png", width: 20,)
                                                           ),
                                                         const SizedBox(
                                                             width: 10),
@@ -455,11 +481,7 @@ class _ListingPageState extends State<ListingPage> {
                                                                   item[
                                                                       'whatsapp']);
                                                             },
-                                                            child: Icon(
-                                                                Icons.chat,
-                                                                color: Colors
-                                                                    .green,
-                                                                size: 24),
+                                                            child: Image.asset("asset/whatsapp2.png", width: 20,)
                                                           ),
                                                         const SizedBox(
                                                             width: 10),
@@ -487,12 +509,7 @@ class _ListingPageState extends State<ListingPage> {
                                                               );
                                                             }
                                                           },
-                                                          child: Icon(
-                                                              Icons.share,
-                                                              color: const Color
-                                                                  .fromARGB(255,
-                                                                  242, 222, 38),
-                                                              size: 24),
+                                                          child: Image.asset("asset/share2.png", width: 20,)
                                                         ),
                                                       ],
                                                     ),

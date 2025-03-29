@@ -2,13 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:onshopapp/Hospitals/hospitallisting.dart';
 import 'package:shimmer/shimmer.dart';
-import 'listing_page.dart';
 
-class SubcategoryGridPage extends StatelessWidget {
-  final String collectionName;
 
-  SubcategoryGridPage({required this.collectionName});
+class HospitalsPage extends StatelessWidget {
+  final String collectionName = "hospitalcategories";
 
   Future<List<Map<String, dynamic>>> _fetchSubcategories() async {
     try {
@@ -49,7 +48,7 @@ class SubcategoryGridPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+
         backgroundColor: Colors.transparent, // Transparent to allow gradient
         toolbarHeight: 70,
         elevation: 0, // Remove shadow if not needed
@@ -68,7 +67,7 @@ class SubcategoryGridPage extends StatelessWidget {
             padding: const EdgeInsets.only(top: 20),
             child: Row(
               children: [
-                const SizedBox(width: 15),
+                const SizedBox(width: 45),
                 ClipRRect(
                   child: Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
                 ),
@@ -107,61 +106,61 @@ class SubcategoryGridPage extends StatelessWidget {
             child: Column(
               children: [
                 // Carousel of banners
-               Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: bannerUrls.isNotEmpty
-                    ? CarouselSlider(
-                        items: bannerUrls.map((url) {
-                          return ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: CachedNetworkImage(
-                              imageUrl: url,
-                              fit: BoxFit.cover, // Ensure the image covers the entire area
-                              placeholder: (context, url) => Shimmer.fromColors(
-                                baseColor: Colors.grey[300]!,
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: bannerUrls.isNotEmpty
+                      ? CarouselSlider(
+                          items: bannerUrls.map((url) {
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: CachedNetworkImage(
+                                imageUrl: url,
+                                fit: BoxFit.cover, // Ensure the image covers the entire area
+                                placeholder: (context, url) => Shimmer.fromColors(
+                                  baseColor: Colors.grey[300]!,
+                                  highlightColor: Colors.grey[100]!,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Shimmer.fromColors(
+                                  baseColor: Colors.grey[300]!,
+                                  highlightColor: Colors.grey[100]!,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                   ),
                                 ),
                               ),
-                              errorWidget: (context, url, error) => Shimmer.fromColors(
-                                baseColor: Colors.grey[300]!,
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              ),
+                            );
+                          }).toList(),
+                          options: CarouselOptions(
+                            height: 180,
+                            enlargeCenterPage: true,
+                            autoPlay: true,
+                            aspectRatio: 16 / 9,
+                            autoPlayCurve: Curves.fastOutSlowIn,
+                            enableInfiniteScroll: true,
+                            autoPlayAnimationDuration: const Duration(milliseconds: 800),
+                            viewportFraction: 1,
+                          ),
+                        )
+                      : Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                          );
-                        }).toList(),
-                        options: CarouselOptions(
-                          height: 180,
-                          enlargeCenterPage: true,
-                          autoPlay: true,
-                          aspectRatio: 16 / 9,
-                          autoPlayCurve: Curves.fastOutSlowIn,
-                          enableInfiniteScroll: true,
-                          autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                          viewportFraction: 1,
-                        ),
-                      )
-                    : Shimmer.fromColors(
-                        baseColor: Colors.grey[300]!,
-                        highlightColor: Colors.grey[100]!,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                      ),
-              ),
+                ),
                 const SizedBox(height: 1),
                 // Subcategories grid
                 FutureBuilder<List<Map<String, dynamic>>>(
@@ -196,7 +195,7 @@ class SubcategoryGridPage extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => ListingPage(
+                                  builder: (context) => hosListingPage(
                                     subcategory: subcategory['name'],
                                   ),
                                 ),

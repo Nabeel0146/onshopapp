@@ -58,16 +58,23 @@ void makeCall(String phoneNumber) async {
   }
 }
 
-void openWhatsApp(BuildContext context, String phoneNumber) async {
-  // Ensure phone number is in international format
-  final formattedPhoneNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
-  final uri = Uri.parse('https://wa.me/$formattedPhoneNumber');
-
-  if (await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+void openWhatsApp(BuildContext context, String whatsappNumber) async {
+  if (whatsappNumber.isNotEmpty) {
+    final whatsappUrl = 'https://wa.me/$whatsappNumber';
+    try {
+      if (!await launchUrl(Uri.parse(whatsappUrl))) {
+        print('Could not launch $whatsappUrl');
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+    }
   } else {
+    // Show SnackBar if no WhatsApp number is available
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Could not open WhatsApp for $phoneNumber')),
+      const SnackBar(
+        content: Text('No WhatsApp number available'),
+        duration: Duration(seconds: 2), // Duration for the SnackBar
+      ),
     );
   }
 }

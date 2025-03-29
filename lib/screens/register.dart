@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:flutter/services.dart';
 import 'package:onshopapp/mainscree.dart';
-
-
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -144,17 +143,25 @@ class _RegisterPageState extends State<RegisterPage> {
                       child: Center(
                         child: Image.asset(
                           'asset/onshopnewcurvedlogo.png',
-                          height: 250,
-                          width: 250,
+                          height: 200,
+                          width: 200,
                           fit: BoxFit.contain,
                         ),
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Text("Create an Account", style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),),
-                    SizedBox(height: 3,),
+                    Text(
+                      "Create an Account",
+                      style:
+                          TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(
+                      height: 3,
+                    ),
                     Text("Please fill the fields to create an account"),
-                    SizedBox(height: 20,),
+                    SizedBox(
+                      height: 20,
+                    ),
                     TextField(
                       controller: _nameController,
                       decoration: InputDecoration(
@@ -180,9 +187,16 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 20),
                     // Mobile number field
+
                     TextField(
                       controller: _mobileController,
-                      keyboardType: TextInputType.phone,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter
+                            .digitsOnly, // Allow only digits
+                        LengthLimitingTextInputFormatter(
+                            10), // Limit to 10 digits
+                      ],
                       decoration: InputDecoration(
                         labelText: 'Mobile Number',
                         border: OutlineInputBorder(
@@ -229,15 +243,15 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderSide: const BorderSide(
-                                  color:
-                                      Colors.black), // Black border when focused
+                                  color: Colors
+                                      .black), // Black border when focused
                               borderRadius:
                                   BorderRadius.circular(8), // Rounded corners
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderSide: const BorderSide(
-                                  color:
-                                      Colors.black), // Black border when enabled
+                                  color: Colors
+                                      .black), // Black border when enabled
                             ),
                           ),
                         ),
@@ -251,28 +265,26 @@ class _RegisterPageState extends State<RegisterPage> {
                     const SizedBox(height: 20),
                     // Address field
                     TextField(
-                      controller: _addressController,
-                      decoration: InputDecoration(
-                        labelText: 'Delivery Address',
-                        border: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                              color: Colors.black), // Black border
-                          borderRadius:
-                              BorderRadius.circular(8), // Rounded corners
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                              color: Colors.black), // Black border when focused
-                          borderRadius:
-                              BorderRadius.circular(8), // Rounded corners
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(
-                              color: Colors.black), // Black border when enabled
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                      ),
-                    ),
+  controller: _addressController,
+  minLines: 2, // Minimum number of lines
+  maxLines: null, // Allow unlimited lines
+  decoration: InputDecoration(
+    hintText: "Delivery Address",
+
+    border: OutlineInputBorder(
+      borderSide: const BorderSide(color: Colors.black), // Black border
+      borderRadius: BorderRadius.circular(8), // Rounded corners
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderSide: const BorderSide(color: Colors.black), // Black border when focused
+      borderRadius: BorderRadius.circular(8), // Rounded corners
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderSide: const BorderSide(color: Colors.black), // Black border when enabled
+      borderRadius: BorderRadius.circular(10.0),
+    ),
+  ),
+),
                     const SizedBox(height: 20),
                     // Register button
                     SizedBox(

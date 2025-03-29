@@ -1,14 +1,116 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:onshopapp/screens/Products/shopedit.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ShopProfilePage extends StatelessWidget {
   final Map<String, dynamic> shopData;
 
   const ShopProfilePage({required this.shopData, Key? key}) : super(key: key);
+
+  void makeCall(String phoneNumber) async {
+    final uri = Uri(scheme: 'tel', path: phoneNumber);
+    try {
+      if (!await launchUrl(uri)) {
+        print('Could not launch $uri');
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+    }
+  }
+
+  void openWhatsAppChat(String whatsappNumber) async {
+    final whatsappUrl = 'https://wa.me/$whatsappNumber';
+    try {
+      if (!await launchUrl(Uri.parse(whatsappUrl))) {
+        print('Could not launch $whatsappUrl');
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+    }
+  }
+
+  void shareDetails(
+      String title, String description, String phoneNumber) async {
+    final footer =
+        '\n\nShared from Onshop App\n\nDownload Onshop App now\nGoogle Playstore: https://play.google.com/store/apps/details?id=com.onshopin.onshopapp&pcampaignid=web_share \nApp Store: https://apps.apple.com/in/app/on-shop/id6740747263 ';
+    final shareContent = '''
+  $title
+
+  $description
+
+  Contact: $phoneNumber
+  $footer
+  ''';
+
+    try {
+      await Share.share(shareContent,
+          subject: 'Check out this item on Onshop!');
+      print('Sharing successful');
+    } catch (e) {
+      print('Error while sharing: $e');
+    }
+  }
+
+  void openMapLink(BuildContext context, String mapLink) async {
+    if (mapLink.isNotEmpty) {
+      try {
+        if (!await launchUrl(Uri.parse(mapLink))) {
+          print('Could not launch $mapLink');
+        }
+      } catch (e) {
+        print('Error occurred: $e');
+      }
+    } else {
+      // Show SnackBar if no map link is available
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No map link available'),
+          duration: Duration(seconds: 2), // Duration for the SnackBar
+        ),
+      );
+    }
+  }
+
+  Future<String> getUserAddress() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        return 'No address provided';
+      }
+
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (!userDoc.exists) {
+        return 'No address provided';
+      }
+
+      return userDoc.data()?['address'] ?? 'No address provided';
+    } catch (e) {
+      print('Error fetching user address: $e');
+      return 'No address provided';
+    }
+  }
+
+  Future<void> openWhatsAppWithDetails(
+      String whatsappNumber, String name, int price, int discountedprice, String description) async {
+    final userAddress = await getUserAddress();
+
+    String productDetails = """
+    Name: $name
+    Price: ₹$price
+    Discounted Price: ₹$discountedprice
+    Description: $description
+    Address: $userAddress
+    """;
+
+    final whatsappUrl = 'https://wa.me/$whatsappNumber?text=${Uri.encodeComponent(productDetails)}';
+    if (!await launchUrl(Uri.parse(whatsappUrl))) {
+      print('Could not launch $whatsappUrl');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +146,8 @@ class ShopProfilePage extends StatelessWidget {
                     children: [
                       const SizedBox(width: 45),
                       ClipRRect(
-                        child: Image.asset("asset/appbarlogo.png", width: 50),
+                        child: Image.asset("asset/onshopnewcurvedlogo.png",
+                            width: 50),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -82,7 +185,7 @@ class ShopProfilePage extends StatelessWidget {
             CachedNetworkImage(
               imageUrl: shopData['image_url'] ?? '',
               width: double.infinity,
-              height: 350, // Image height same as screen width
+              height: 300, // Image height same as screen width
               fit: BoxFit.cover,
               placeholder: (context, url) =>
                   const Center(child: CircularProgressIndicator()),
@@ -130,19 +233,34 @@ class ShopProfilePage extends StatelessWidget {
                         imagePath: "asset/phone-call.png",
                         text: 'Call',
                         color: Colors.blue,
-                        onPressed: () {},
+                        onPressed: () {
+                          makeCall(shopData['phone'] ??
+                              ''); // Replace with the actual phone number
+                        },
                       ),
                       _buildButton(
                         imagePath: "asset/whatsapp2.png",
                         text: 'Chat',
                         color: Colors.green,
-                        onPressed: () {},
+                        onPressed: () {
+                          openWhatsAppChat(shopData['whatsapp'] ??
+                              ''); // Replace with the actual WhatsApp number
+                        },
                       ),
                       _buildButton(
                         imagePath: "asset/share2.png",
                         text: 'Share',
                         color: Colors.amber,
-                        onPressed: () {},
+                        onPressed: () {
+                          shareDetails(
+                            shopData['name'] ??
+                                'No Name', // Replace with actual title
+                            shopData['description'] ??
+                                'No Description', // Replace with actual description
+                            shopData['phone'] ??
+                                '', // Replace with actual phone number
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -157,7 +275,9 @@ class ShopProfilePage extends StatelessWidget {
                       color: Colors.black,
                       backgroundColor: Colors.white,
                       borderColor: Colors.black,
-                      onPressed: () {},
+                      onPressed: () {
+                        openMapLink(context, shopData['maplink'] ?? ''); // Replace with the actual map link
+                      },
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -166,16 +286,15 @@ class ShopProfilePage extends StatelessWidget {
                   Center(
                     child: const Text(
                       'Products',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                     ),
                   ),
                   const Divider(
                     thickness: .5,
                     color: Colors.grey,
                   ),
-                  
                   const SizedBox(height: 16),
-                  
 
                   // Fetch and display products from Firestore
                   StreamBuilder<QuerySnapshot>(
@@ -202,20 +321,23 @@ class ShopProfilePage extends StatelessWidget {
                           crossAxisSpacing: 12, // Increases horizontal spacing
                           mainAxisSpacing: 12, // Increases vertical spacing
                           childAspectRatio:
-                              0.52, // Decrease this value to make items taller
+                              0.50, // Decrease this value to make items taller
                         ),
                         itemCount: snapshot.data!.docs.length,
                         itemBuilder: (context, index) {
-  final product = snapshot.data!.docs[index].data() as Map<String, dynamic>;
-  return _buildProductCard(
-    product['name'] ?? 'No Name',
-    product['price'] ?? 0,
-    product['discountedprice'] ?? 0,
-    product['image_url'] ?? 'https://via.placeholder.com/150',
-    shopData['whatsapp'] ?? '',
-    product['description'] ?? 'No Description', // Pass the description field
-  );
-},
+                          final product = snapshot.data!.docs[index].data()
+                              as Map<String, dynamic>;
+                          return _buildProductCard(
+                            product['name'] ?? 'No Name',
+                            product['price'] ?? 0,
+                            product['discountedprice'] ?? 0,
+                            product['image_url'] ??
+                                'https://via.placeholder.com/150',
+                            shopData['whatsapp'] ?? '',
+                            product['description'] ??
+                                'No Description', // Pass the description field
+                          );
+                        },
                       );
                     },
                   ),
@@ -236,232 +358,251 @@ class ShopProfilePage extends StatelessWidget {
   }
 
   void _showShopIdDialog(BuildContext context, String shopId) {
-  final TextEditingController _shopIdController = TextEditingController();
+    final TextEditingController _shopIdController = TextEditingController();
 
-  showDialog<String>(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Column(
-          children: [
-            const Text('Enter Shop ID'),
-            SizedBox(height: 20,)
-          ],
-        ),
-        content: TextField(
-          autofocus: true,
-          controller: _shopIdController,
-          decoration: InputDecoration(
-            hintText: 'Shop ID',
-            border: OutlineInputBorder(
-              borderSide: const BorderSide(color: Colors.black), // Black border
-              borderRadius: BorderRadius.circular(8), // Rounded corners
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: Colors.black), // Black border when focused
-              borderRadius: BorderRadius.circular(8), // Rounded corners
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: Colors.black), // Black border when enabled
-              borderRadius: BorderRadius.circular(8),
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Column(
+            children: [
+              const Text('Enter Shop ID'),
+              SizedBox(
+                height: 20,
+              )
+            ],
+          ),
+          content: TextField(
+            autofocus: true,
+            controller: _shopIdController,
+            decoration: InputDecoration(
+              hintText: 'Shop ID',
+              border: OutlineInputBorder(
+                borderSide:
+                    const BorderSide(color: Colors.black), // Black border
+                borderRadius: BorderRadius.circular(8), // Rounded corners
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: const BorderSide(
+                    color: Colors.black), // Black border when focused
+                borderRadius: BorderRadius.circular(8), // Rounded corners
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: const BorderSide(
+                    color: Colors.black), // Black border when enabled
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
           ),
-        ),
-        actions: <Widget>[
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: ElevatedButton(
-              onPressed: () {
-                final enteredShopId = _shopIdController.text;
-                if (enteredShopId == shopId) {
-                  Navigator.of(context).pop();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ShopEditPage(
-                        shopId: shopData['shopid'], // Make sure shopid exists in shopData
-                        shopData: shopData,
+          actions: <Widget>[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: ElevatedButton(
+                onPressed: () {
+                  final enteredShopId = _shopIdController.text;
+                  if (enteredShopId == shopId) {
+                    Navigator.of(context).pop();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ShopEditPage(
+                          shopId: shopData[
+                              'shopid'], // Make sure shopid exists in shopData
+                          shopData: shopData,
+                        ),
                       ),
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Incorrect Shop ID')),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber, // Green background
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8), // Rounded corners
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Incorrect Shop ID')),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber, // Green background
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8), // Rounded corners
+                  ),
+                ),
+                child: const Text(
+                  'Submit',
+                  style: TextStyle(color: Colors.white),
                 ),
               ),
-              child: const Text('Submit', style: TextStyle(color: Colors.white),),
             ),
+          ],
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(16), // Curved corners for the dialog
           ),
-        ],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16), // Curved corners for the dialog
-        ),
-        backgroundColor: Colors.white, // White background for the dialog
-      );
-    },
-  );
-}
+          backgroundColor: Colors.white, // White background for the dialog
+        );
+      },
+    );
+  }
 
   Widget _buildButton({
-  required String imagePath,
-  required String text,
-  required Color color,
-  VoidCallback? onPressed,
-  Color backgroundColor = Colors.transparent,
-  Color borderColor = Colors.black,
-}) {
-  return Padding(
-    padding: const EdgeInsets.only(left:2, right: 2),
-    child: OutlinedButton(
-    
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 28),
-        backgroundColor: backgroundColor,
-        side: BorderSide(color: borderColor, width: 1),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    required String imagePath,
+    required String text,
+    required Color color,
+    VoidCallback? onPressed,
+    Color backgroundColor = Colors.transparent,
+    Color borderColor = Colors.black,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 2, right: 2),
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 28),
+          backgroundColor: backgroundColor,
+          side: BorderSide(color: borderColor, width: 1),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              imagePath,
+              width: 24,
+              height: 24,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              text,
+              style:
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Image.asset(
-            imagePath,
-            width: 24,
-            height: 24,
-    
-          ),
-          const SizedBox(width: 8),
-          Text(
-            text,
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
-    ),
-  );
-}
+    );
+  }
 
- Widget _buildProductCard(String name, int price, int discountedprice, String imageUrl, String whatsappNumber, String description) {
-  return Container(
-    decoration: BoxDecoration(
-      border: Border.all(
-        color: Colors.grey, // Border color
-        width: 0.5, // Border width
-      ),
-      borderRadius: BorderRadius.circular(8), // Rounded corners
-    ),
-    child: Card(
-      elevation: 0, // Flat look
-      shape: RoundedRectangleBorder(
+  Widget _buildProductCard(String name, int price, int discountedprice,
+      String imageUrl, String whatsappNumber, String description) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.grey, // Border color
+          width: 0.5, // Border width
+        ),
         borderRadius: BorderRadius.circular(8), // Rounded corners
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Image
-          if (imageUrl.isNotEmpty)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: AspectRatio(
-                aspectRatio: 4 / 4,
-                child: CachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: Colors.grey[300],
-                    child: const Center(child: CircularProgressIndicator()),
-                  ),
-                  errorWidget: (context, url, error) => const Icon(
-                    Icons.image_not_supported,
-                    size: 40,
-                    color: Colors.grey,
+      child: Card(
+        elevation: 0, // Flat look
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8), // Rounded corners
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Image
+            if (imageUrl.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: AspectRatio(
+                  aspectRatio: 4 / 4,
+                  child: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      color: Colors.grey[300],
+                      child: const Center(child: CircularProgressIndicator()),
+                    ),
+                    errorWidget: (context, url, error) => const Icon(
+                      Icons.image_not_supported,
+                      size: 40,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
+              )
+            else
+              AspectRatio(
+                aspectRatio: 3 / 3,
+                child: Container(
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.image_not_supported,
+                      size: 40, color: Colors.grey),
+                ),
               ),
-            )
-          else
-            AspectRatio(
-              aspectRatio: 3 / 3,
-              child: Container(
-                color: Colors.grey[300],
-                child: const Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
-              ),
-            ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
 
-          // Product Name
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              name,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(height: 2),
-
-          // Product Description
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              description,
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-          ),
-          const SizedBox(height: 2),
-
-          // Product Price
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              '₹$price',
-              style: const TextStyle(fontSize: 20),
-            ),
-          ),
-          const SizedBox(height: 2),
-
-          // Discounted Price
-          if (discountedprice > 0)
+            // Product Name
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                'MRP ₹$discountedprice',
-                style: const TextStyle(fontSize: 14, decoration: TextDecoration.lineThrough),
+                name,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
-          const SizedBox(height: 4),
+            const SizedBox(height: 2),
 
-          // Order Now Button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2.0),
-            child: ElevatedButton(
-              onPressed: () {
-                String productDetails = "Name: $name\nPrice: ₹$price\nDiscounted Price: ₹$discountedprice";
-                String whatsappUrl = "https://wa.me/$whatsappNumber?text=${Uri.encodeComponent(productDetails)}";
-                launchUrl(Uri.parse(whatsappUrl));
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+            // Product Description
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                description,
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(height: 2),
+
+            // Product Price
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                '₹$price',
+                style: const TextStyle(fontSize: 20),
+              ),
+            ),
+            const SizedBox(height: 2),
+
+            // Discounted Price
+            if (discountedprice > 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  'MRP ₹$discountedprice',
+                  style: const TextStyle(
+                      fontSize: 14, decoration: TextDecoration.lineThrough),
                 ),
               ),
-              child: const Text(
-                "Order Now",
-                style: TextStyle(color: Colors.white),
+            const SizedBox(height: 4),
+
+            // Order Now Button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  openWhatsAppWithDetails(
+                    whatsappNumber,
+                    name,
+                    price,
+                    discountedprice,
+                    description,
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  "Order Now",
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

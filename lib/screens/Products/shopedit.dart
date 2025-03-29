@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -146,6 +147,29 @@ class _ShopEditPageState extends State<ShopEditPage> {
   }
 
   void _deleteProduct(String productId) async {
+  // Show a confirmation dialog
+  bool? confirmDelete = await showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Confirm Deletion'),
+        content: Text('Are you sure you want to delete this product?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false), // Return false if cancel is pressed
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true), // Return true if delete is pressed
+            child: Text('Delete'),
+          ),
+        ],
+      );
+    },
+  );
+
+  // Check if the user confirmed the deletion
+  if (confirmDelete == true) {
     await FirebaseFirestore.instance
         .collection('products')
         .doc(productId)
@@ -153,6 +177,7 @@ class _ShopEditPageState extends State<ShopEditPage> {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text("Product deleted")));
   }
+}
 
   void _editProduct(String productId, Map<String, dynamic> productData) {
     TextEditingController nameController =
@@ -312,7 +337,7 @@ class _ShopEditPageState extends State<ShopEditPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-      flexibleSpace: Container(
+        flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -327,7 +352,6 @@ class _ShopEditPageState extends State<ShopEditPage> {
             padding: const EdgeInsets.only(top: 20),
             child: Row(
               children: [
-                
                 Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -348,8 +372,8 @@ class _ShopEditPageState extends State<ShopEditPage> {
             ),
           ),
         ),
-      backgroundColor: Colors.amber,),
-      
+        backgroundColor: Colors.amber,
+      ),
       body: shopDetails == null || categories.isEmpty
           ? Center(
               child:
@@ -397,12 +421,10 @@ class _ShopEditPageState extends State<ShopEditPage> {
 
                   SizedBox(height: 20),
                   Container(
-                    
                     width: double
                         .infinity, // Make the button width fill the available space
                     height: 50, // Set a fixed height for the button
                     decoration: BoxDecoration(
-
                       borderRadius:
                           BorderRadius.circular(10), // Rounded corners
                     ),
@@ -418,7 +440,10 @@ class _ShopEditPageState extends State<ShopEditPage> {
                               BorderRadius.circular(10), // Rounded corners
                         ),
                       ),
-                      child: Text("Save Changes", style: TextStyle(color: Colors.white),),
+                      child: Text(
+                        "Save Changes",
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
 
@@ -429,9 +454,19 @@ class _ShopEditPageState extends State<ShopEditPage> {
                       Text("Products",
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold)),
-                      IconButton(
-                        icon: Icon(Icons.add, color: Colors.blue),
-                        onPressed: _addProduct,
+                      GestureDetector(
+                        onTap: _addProduct,
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.add, color: Colors.blue),
+                              onPressed: _addProduct,
+                            ),
+                            Text("Add new",
+                            
+                             style: TextStyle(color: Colors.blue) )
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -450,8 +485,10 @@ class _ShopEditPageState extends State<ShopEditPage> {
       child: TextField(
         controller: controller,
         keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
-        decoration:
-            InputDecoration(labelText: label, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+        decoration: InputDecoration(
+            labelText: label,
+            border:
+                OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
       ),
     );
   }
@@ -481,38 +518,55 @@ class _ShopEditPageState extends State<ShopEditPage> {
             var product = products[index].data() as Map<String, dynamic>;
             String productId = products[index].id;
 
-            return Card(
+            return Container(
               margin: EdgeInsets.symmetric(vertical: 8),
-              child: ListTile(
-                leading: product['image_url'] != null &&
-                        product['image_url'].isNotEmpty
-                    ? Image.network(product['image_url'],
-                        width: 50, height: 50, fit: BoxFit.cover)
-                    : Icon(Icons.image, size: 50),
-                title: Text(product['name'] ?? 'Unnamed Product'),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(product['description'] ?? ''),
-                    Text(product['category'] ?? ''),
-                    if (product['price'] != null)
-                      Text("Price: ${product['price']}"),
-                    if (product['discountedprice'] != null)
-                      Text("Discounted Price: ${product['discountedprice']}"),
-                  ],
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.edit, color: Colors.blue),
-                      onPressed: () => _editProduct(productId, product),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteProduct(productId),
-                    ),
-                  ],
+              decoration: BoxDecoration(
+                border:
+                    Border.all(color: Colors.grey, width: 1), // Add a border
+                borderRadius: BorderRadius.circular(10), // Rounded corners
+              ),
+              child: Card(
+                margin:
+                    EdgeInsets.zero, // Remove the default margin of the Card
+                child: ListTile(
+                  leading: product['image_url'] != null &&
+                          product['image_url'].isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                              10), // Rounded corners for the image
+                          child: Image.network(
+                            product['image_url'],
+                            width: 60,
+                            height:60,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Icon(Icons.image, size: 50),
+                  title: Text(product['name'] ?? 'Unnamed Product'),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(product['description'] ?? ''),
+                      Text(product['category'] ?? ''),
+                      if (product['price'] != null)
+                        Text("Price: ${product['price']}"),
+                      if (product['discountedprice'] != null)
+                        Text("Discounted Price: ${product['discountedprice']}"),
+                    ],
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () => _editProduct(productId, product),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _deleteProduct(productId),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );

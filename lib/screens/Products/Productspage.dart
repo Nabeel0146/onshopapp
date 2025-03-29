@@ -103,9 +103,38 @@ class _ProductsPageState extends State<ProductsPage> {
     }
   }
 
-  void _openWhatsApp(String phoneNumber) async {
+  Future<String> getUserAddress() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        return 'No address provided';
+      }
+
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (!userDoc.exists) {
+        return 'No address provided';
+      }
+
+      return userDoc.data()?['address'] ?? 'No address provided';
+    } catch (e) {
+      print('Error fetching user address: $e');
+      return 'No address provided';
+    }
+  }
+
+  Future<void> _openWhatsApp(String phoneNumber, String productName, int price, int discountedPrice, String description) async {
+    final userAddress = await getUserAddress();
     final formattedPhoneNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
-    final uri = Uri.parse('https://wa.me/$formattedPhoneNumber');
+    final productDetails = """
+    Name: $productName
+    Price: ₹$price
+    Discounted Price: ₹$discountedPrice
+    Description: $description
+    Address: $userAddress
+    """;
+
+    // Ensure the URL is a plain string without HTML tags
+    final uri = Uri.parse('https://wa.me/$formattedPhoneNumber?text=${Uri.encodeComponent(productDetails)}');
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -213,8 +242,7 @@ class _ProductsPageState extends State<ProductsPage> {
                             }
 
                             // Fetch offers for the new city
-                            setState(
-                                () {}); // Ensure this method is called to reload the page
+                            setState(() {}); // Ensure this method is called to reload the page
                           },
                         ),
                       ),
@@ -262,7 +290,7 @@ class _ProductsPageState extends State<ProductsPage> {
                     crossAxisSpacing: 8,
                     mainAxisSpacing: 8,
                     childAspectRatio:
-                        0.54, // Adjust this value to give more height to each grid item
+                        0.50, // Adjust this value to give more height to each grid item
                   ),
                   itemCount: items.length,
                   itemBuilder: (context, index) {
@@ -370,7 +398,13 @@ class _ProductsPageState extends State<ProductsPage> {
                               child: ElevatedButton(
                                 onPressed: () {
                                   if (item['whatsappnumber'] != null) {
-                                    _openWhatsApp(item['whatsappnumber']);
+                                    _openWhatsApp(
+                                      item['whatsappnumber'],
+                                      item['name'] ?? 'No Name',
+                                      item['price'] ?? 0,
+                                      item['discountedprice'] ?? 0,
+                                      item['description'] ?? 'No Description',
+                                    );
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(

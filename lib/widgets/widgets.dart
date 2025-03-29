@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:onshopapp/Hospitals/hospitalcategory.dart';
 import 'package:onshopapp/screens/jobs.dart';
 import 'package:onshopapp/screens/offers_page.dart';
 import 'package:onshopapp/screens/subcategory_page.dart';
@@ -230,6 +231,14 @@ Widget buildSmallCategoryTile(BuildContext context, String title,
           context,
           MaterialPageRoute(
             builder: (context) => JobsListingPage(),
+          ),
+        );
+      } else if (title == 'Hospitals') {
+        // Navigate to the HospitalsPage when "Hospitals" is clicked
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HospitalsPage(),
           ),
         );
       } else {

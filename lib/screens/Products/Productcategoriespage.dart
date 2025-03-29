@@ -2,18 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:onshopapp/screens/Products/Productspage.dart'; // Ensure this import is correct
 
 class ProductCategoriesPage extends StatelessWidget {
-  Future<String?> _fetchBannerImageUrl() async {
+  Future<List<String>> _fetchBannerImageUrls() async {
     try {
       final querySnapshot = await FirebaseFirestore.instance.collection('shoppagebanners').doc('banner').get();
-      final imageUrl = querySnapshot.data()?['imageUrl'] as String?;
-      print('Fetched banner image URL: $imageUrl'); // Debugging
-      return imageUrl;
+      final data = querySnapshot.data();
+      List<String> bannerUrls = [];
+      for (int i = 1; i <= 10; i++) {
+        final key = 'ad$i';
+        if (data != null && data.containsKey(key) && data[key] is String) {
+          bannerUrls.add(data[key] as String);
+        }
+      }
+      print('Fetched banner image URLs: $bannerUrls'); // Debugging
+      return bannerUrls;
     } catch (e) {
-      print('Error fetching banner image: $e');
-      return null;
+      print('Error fetching banner images: $e');
+      return [];
     }
   }
 
@@ -66,62 +74,72 @@ class ProductCategoriesPage extends StatelessWidget {
           ),
         ),
       ),
-      body: FutureBuilder<String?>(
-        future: _fetchBannerImageUrl(),
+      body: FutureBuilder<List<String>>(
+        future: _fetchBannerImageUrls(),
         builder: (context, bannerSnapshot) {
           if (bannerSnapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final bannerImageUrl = bannerSnapshot.data;
+          final bannerUrls = bannerSnapshot.data ?? [];
 
           return Column(
             children: [
-              // Banner at the top
+              // Carousel of banners
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Container(
-                  width: 500,
-                  height: 150,
-                  child: bannerImageUrl != null
-                      ? ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: CachedNetworkImage(
-                            imageUrl: bannerImageUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Shimmer.fromColors(
-                              baseColor: Colors.grey[300]!,
-                              highlightColor: Colors.grey[100]!,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
+                child: bannerUrls.isNotEmpty
+                    ? CarouselSlider(
+                        items: bannerUrls.map((url) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: CachedNetworkImage(
+                              imageUrl: url,
+                              fit: BoxFit.cover, // Ensure the image covers the entire area
+                              placeholder: (context, url) => Shimmer.fromColors(
+                                baseColor: Colors.grey[300]!,
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Shimmer.fromColors(
+                                baseColor: Colors.grey[300]!,
+                                highlightColor: Colors.grey[100]!,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
                                 ),
                               ),
                             ),
-                            errorWidget: (context, url, error) => Shimmer.fromColors(
-                              baseColor: Colors.grey[300]!,
-                              highlightColor: Colors.grey[100]!,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                            ),
-                          ),
+                          );
+                        }).toList(),
+                        options: CarouselOptions(
+                          height: 180,
+                          enlargeCenterPage: true,
+                          autoPlay: true,
+                          aspectRatio: 16 / 9,
+                          autoPlayCurve: Curves.fastOutSlowIn,
+                          enableInfiniteScroll: true,
+                          autoPlayAnimationDuration: const Duration(milliseconds: 800),
+                          viewportFraction: 1,
+                        ),
                       )
-                      : Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                    : Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                ),
+                      ),
               ),
               const SizedBox(height: 16),
               Expanded(

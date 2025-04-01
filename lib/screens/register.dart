@@ -60,52 +60,65 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _register() async {
+  setState(() {
+    _isLoading = true; // Start loading
+  });
+
+  final name = _nameController.text.trim();
+  final mobile = _mobileController.text.trim();
+  final address = _addressController.text.trim();
+
+  if (_selectedCity == null) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('Please select a city.')));
     setState(() {
-      _isLoading = true; // Start loading
+      _isLoading = false; // Stop loading
     });
-
-    if (_selectedCity == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Please select a city.')));
-      setState(() {
-        _isLoading = false; // Stop loading
-      });
-      return;
-    }
-
-    try {
-      UserCredential userCredential = await _auth.signInAnonymously();
-      User? user = userCredential.user;
-
-      if (user != null) {
-        await _firestore.collection('users').doc(user.uid).set({
-          'name': _nameController.text.trim(),
-          'mobile': _mobileController.text.trim(),
-          'city': _selectedCity,
-          'address': _addressController.text.trim(), // Added address field
-          'email': user.email ?? 'anonymous',
-          'createdAt': FieldValue.serverTimestamp(), // Added timestamp
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('User registered successfully!')));
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => MainScreen()),
-        );
-      }
-    } catch (e) {
-      print("Error during registration: $e");
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('An error occurred.')));
-    } finally {
-      setState(() {
-        _isLoading = false; // Stop loading
-      });
-    }
+    return;
   }
 
+  if (mobile.length != 10) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Mobile number must be exactly 10 digits.')),
+    );
+    setState(() {
+      _isLoading = false; // Stop loading
+    });
+    return;
+  }
+
+  try {
+    UserCredential userCredential = await _auth.signInAnonymously();
+    User? user = userCredential.user;
+
+    if (user != null) {
+      await _firestore.collection('users').doc(user.uid).set({
+        'name': name,
+        'mobile': mobile,
+        'city': _selectedCity,
+        'address': address,
+        'email': user.email ?? 'anonymous',
+        'createdAt': FieldValue.serverTimestamp(), // Added timestamp
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User registered successfully!')));
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => MainScreen()),
+      );
+    }
+  } catch (e) {
+    print("Error during registration: $e");
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('An error occurred.')));
+  } finally {
+    setState(() {
+      _isLoading = false; // Stop loading
+    });
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(

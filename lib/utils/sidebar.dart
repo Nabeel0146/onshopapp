@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:onshopapp/screens/formals/aboutpage.dart';
 import 'package:onshopapp/screens/formals/deleteaccount.dart';
 import 'package:onshopapp/screens/formals/privacypolicy.dart';
+import 'package:onshopapp/utils/video.dart'; // Import the new page
 
 class Sidebar extends StatelessWidget {
   @override
@@ -69,6 +70,16 @@ class Sidebar extends StatelessWidget {
                   ),
           ),
           ListTile(
+            leading: const Icon(Icons.video_collection_rounded),
+            title: const Text('Video Demo'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HowToUsePage()),
+              );
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.info),
             title: const Text('About OnShop'),
             onTap: () {
@@ -98,6 +109,7 @@ class Sidebar extends StatelessWidget {
               );
             },
           ),
+          
         ],
       ),
     );

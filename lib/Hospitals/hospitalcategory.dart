@@ -115,8 +115,10 @@ class HospitalsPage extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10),
                               child: CachedNetworkImage(
                                 imageUrl: url,
-                                fit: BoxFit.cover, // Ensure the image covers the entire area
-                                placeholder: (context, url) => Shimmer.fromColors(
+                                fit: BoxFit
+                                    .contain, // Ensure the image fits within the container without being cut off
+                                placeholder: (context, url) =>
+                                    Shimmer.fromColors(
                                   baseColor: Colors.grey[300]!,
                                   highlightColor: Colors.grey[100]!,
                                   child: Container(
@@ -126,7 +128,8 @@ class HospitalsPage extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                errorWidget: (context, url, error) => Shimmer.fromColors(
+                                errorWidget: (context, url, error) =>
+                                    Shimmer.fromColors(
                                   baseColor: Colors.grey[300]!,
                                   highlightColor: Colors.grey[100]!,
                                   child: Container(
@@ -140,13 +143,14 @@ class HospitalsPage extends StatelessWidget {
                             );
                           }).toList(),
                           options: CarouselOptions(
-                            height: 180,
+                            height: 380,
                             enlargeCenterPage: true,
                             autoPlay: true,
                             aspectRatio: 16 / 9,
                             autoPlayCurve: Curves.fastOutSlowIn,
                             enableInfiniteScroll: true,
-                            autoPlayAnimationDuration: const Duration(milliseconds: 800),
+                            autoPlayAnimationDuration:
+                                const Duration(milliseconds: 800),
                             viewportFraction: 1,
                           ),
                         )

@@ -25,25 +25,20 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
   late TextEditingController _mapLinkController;
 
   final TextEditingController _doctorNameController = TextEditingController();
-  final TextEditingController _doctorDescriptionController =
-      TextEditingController();
+  final TextEditingController _doctorDescriptionController = TextEditingController();
   final TextEditingController _doctorTimingController = TextEditingController();
   final TextEditingController _doctorDaysController = TextEditingController();
+  final TextEditingController _doctorImageUrlController = TextEditingController(); // Define here
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.hospitalData['name']);
-    _descriptionController =
-        TextEditingController(text: widget.hospitalData['description']);
-    _phoneController =
-        TextEditingController(text: widget.hospitalData['mobile']);
-    _whatsappController =
-        TextEditingController(text: widget.hospitalData['whatsapp']);
-    _imageUrlController =
-        TextEditingController(text: widget.hospitalData['image_url']);
-    _mapLinkController =
-        TextEditingController(text: widget.hospitalData['maplink']);
+    _descriptionController = TextEditingController(text: widget.hospitalData['description']);
+    _phoneController = TextEditingController(text: widget.hospitalData['mobile']);
+    _whatsappController = TextEditingController(text: widget.hospitalData['whatsapp']);
+    _imageUrlController = TextEditingController(text: widget.hospitalData['image_url']);
+    _mapLinkController = TextEditingController(text: widget.hospitalData['maplink']);
   }
 
   @override
@@ -177,6 +172,25 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
                   maxLines: 3,
                 ),
                 const SizedBox(height: 10),
+                TextFormField(
+                  controller: _doctorImageUrlController, // Use the class-level controller
+                  decoration: InputDecoration(
+                    labelText: 'Image URL',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8), // Rounded corners
+                      borderSide: const BorderSide(color: Colors.grey, width: 1), // Border color and width
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8), // Rounded corners
+                      borderSide: const BorderSide(color: Colors.blue, width: 1), // Focused border color and width
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8), // Rounded corners
+                      borderSide: const BorderSide(color: Colors.grey, width: 1), // Enabled border color and width
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey, width: 1),
@@ -200,8 +214,11 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
                             }
                           },
                           child: Text(
-                            startTime == null ? 'Select Start Time' : startTime!.format(context).toString(),
-                            style: TextStyle(color: startTime == null ? Colors.grey : Colors.black),
+                            startTime == null
+                                ? 'Select Start Time'
+                                : startTime!.format(context).toString(),
+                            style: TextStyle(
+                                color: startTime == null ? Colors.grey : Colors.black),
                           ),
                         ),
                       ),
@@ -220,8 +237,11 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
                             }
                           },
                           child: Text(
-                            endTime == null ? 'Select End Time' : endTime!.format(context).toString(),
-                            style: TextStyle(color: endTime == null ? Colors.grey : Colors.black),
+                            endTime == null
+                                ? 'Select End Time'
+                                : endTime!.format(context).toString(),
+                            style: TextStyle(
+                                color: endTime == null ? Colors.grey : Colors.black),
                           ),
                         ),
                       ),
@@ -289,7 +309,7 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
                       endTime != null &&
                       selectedStartDay != null &&
                       selectedEndDay != null) {
-                    _addDoctor(startTime!, endTime!, selectedStartDay!, selectedEndDay!);
+                    _addDoctor(startTime!, endTime!, selectedStartDay!, selectedEndDay!, _doctorImageUrlController.text);
                     Navigator.pop(context);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -307,40 +327,169 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
   );
 }
 
-  Future<void> _addDoctor(TimeOfDay startTime, TimeOfDay endTime,
-      String startDay, String endDay) async {
-    final name = _doctorNameController.text;
-    final description = _doctorDescriptionController.text;
+Future<void> _addDoctor(TimeOfDay startTime, TimeOfDay endTime, String startDay, String endDay, String imageUrl) async {
+  final name = _doctorNameController.text;
+  final description = _doctorDescriptionController.text;
 
-    if (name.isEmpty || description.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content:
-                Text('Please fill all the required fields for the doctor')),
-      );
-      return;
-    }
+  if (name.isEmpty || description.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please fill all the required fields for the doctor')),
+    );
+    return;
+  }
 
-    try {
-      await FirebaseFirestore.instance.collection('doctors').add({
-        'name': name,
-        'description': description,
-        'timing': '${startTime.format(context)}-${endTime.format(context)}',
-        'days': '$startDay-$endDay',
-        'hospital': widget.hospitalData['name'],
-        'hospitalid': widget.hospitalId,
-      });
+  try {
+    await FirebaseFirestore.instance.collection('doctors').add({
+      'name': name,
+      'description': description,
+      'timing': '${startTime.format(context)}-${endTime.format(context)}',
+      'days': '$startDay-$endDay',
+      'hospital': widget.hospitalData['name'],
+      'hospitalid': widget.hospitalId,
+      'image_url': imageUrl, // Add the new image_url field
+    });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Doctor added successfully')),
-      );
-      _doctorNameController.clear();
-      _doctorDescriptionController.clear();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error adding doctor: $e')),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Doctor added successfully')),
+    );
+    _doctorNameController.clear();
+    _doctorDescriptionController.clear();
+    _doctorImageUrlController.clear(); // Clear the image URL controller
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error adding doctor: $e')),
+    );
+  }
+}
+
+  // Future<void> _addDoctor(TimeOfDay startTime, TimeOfDay endTime,
+  //     String startDay, String endDay) async {
+  //   final name = _doctorNameController.text;
+  //   final description = _doctorDescriptionController.text;
+
+  //   if (name.isEmpty || description.isEmpty) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //           content:
+  //               Text('Please fill all the required fields for the doctor')),
+  //     );
+  //     return;
+  //   }
+
+  //   try {
+  //     await FirebaseFirestore.instance.collection('doctors').add({
+  //       'name': name,
+  //       'description': description,
+  //       'timing': '${startTime.format(context)}-${endTime.format(context)}',
+  //       'days': '$startDay-$endDay',
+  //       'hospital': widget.hospitalData['name'],
+  //       'hospitalid': widget.hospitalId,
+  //     });
+
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Doctor added successfully')),
+  //     );
+  //     _doctorNameController.clear();
+  //     _doctorDescriptionController.clear();
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Error adding doctor: $e')),
+  //     );
+  //   }
+  // }
+
+  void _showEditDoctorDialog(String doctorId, Map<String, dynamic> doctorData) {
+    final TextEditingController nameController =
+        TextEditingController(text: doctorData['name']);
+    final TextEditingController descriptionController =
+        TextEditingController(text: doctorData['description']);
+    final TextEditingController timingController =
+        TextEditingController(text: doctorData['timing']);
+    final TextEditingController daysController =
+        TextEditingController(text: doctorData['days']);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Doctor'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Doctor Name'),
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: descriptionController,
+                decoration:
+                    const InputDecoration(labelText: 'Doctor Description'),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: timingController,
+                decoration: const InputDecoration(labelText: 'Timing'),
+              ),
+              const SizedBox(height: 10),
+              TextFormField(
+                controller: daysController,
+                decoration: const InputDecoration(labelText: 'Days'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final name = nameController.text;
+                final description = descriptionController.text;
+                final timing = timingController.text;
+                final days = daysController.text;
+
+                if (name.isEmpty ||
+                    description.isEmpty ||
+                    timing.isEmpty ||
+                    days.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Please fill all the required fields')),
+                  );
+                  return;
+                }
+
+                try {
+                  await FirebaseFirestore.instance
+                      .collection('doctors')
+                      .doc(doctorId)
+                      .update({
+                    'name': name,
+                    'description': description,
+                    'timing': timing,
+                    'days': days,
+                  });
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Doctor updated successfully')),
+                  );
+                  Navigator.pop(context);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error updating doctor: $e')),
+                  );
+                }
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -431,9 +580,30 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
               decoration: const InputDecoration(labelText: 'Map Link'),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _updateHospital,
-              child: const Text('Update Hospital'),
+            Container(
+              width: double.infinity, // Full width
+              margin: const EdgeInsets.symmetric(
+                  vertical: 10.0), // Add some vertical margin
+              child: GestureDetector(
+                onTap: _updateHospital, // Handle the tap event
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 10.0), // Add padding inside the container
+                  decoration: BoxDecoration(
+                    color: Colors.amber, // Amber background color
+                    borderRadius: BorderRadius.circular(8.0), // Rounded corners
+                  ),
+                  child: const Text(
+                    'Update Hospital',
+                    textAlign: TextAlign.center, // Center the text
+                    style: TextStyle(
+                      color: Colors.white, // Text color
+                      fontSize: 14.0, // Font size
+                      fontWeight: FontWeight.bold, // Bold font weight
+                    ),
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 30),
             Row(
@@ -449,7 +619,6 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
                 ),
               ],
             ),
-
             const SizedBox(height: 20),
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -493,26 +662,37 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
                             Text('Days: ${doctor['days'] ?? ''}'),
                           ],
                         ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () async {
-                            try {
-                              await FirebaseFirestore.instance
-                                  .collection('doctors')
-                                  .doc(doctorId)
-                                  .delete();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content:
-                                        Text('Doctor deleted successfully')),
-                              );
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                    content: Text('Error deleting doctor: $e')),
-                              );
-                            }
-                          },
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () =>
+                                  _showEditDoctorDialog(doctorId, doctor),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () async {
+                                try {
+                                  await FirebaseFirestore.instance
+                                      .collection('doctors')
+                                      .doc(doctorId)
+                                      .delete();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Doctor deleted successfully')),
+                                  );
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content:
+                                            Text('Error deleting doctor: $e')),
+                                  );
+                                }
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     );

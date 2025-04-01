@@ -341,7 +341,7 @@ class _ListingPageState extends State<ListingPage> {
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.only(top: 4,left: 4, right: 4, bottom: 60),
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final item = items[index];
@@ -573,6 +573,7 @@ class _ListingPageState extends State<ListingPage> {
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold),
                                   ),
+
                                 ],
                               ),
                             ),

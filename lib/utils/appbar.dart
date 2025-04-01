@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shimmer/shimmer.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final List<String> cities;
@@ -92,7 +93,33 @@ class AppBarContent extends StatelessWidget {
                     : null,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator(); // Show a loading indicator while fetching data
+                    return Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 10,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            width: 100,
+                            height: 18,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            width: 150,
+                            height: 14,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    );
                   }
 
                   if (snapshot.hasError) {

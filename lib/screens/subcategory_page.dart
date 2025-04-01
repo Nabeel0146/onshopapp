@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -28,7 +29,10 @@ class SubcategoryGridPage extends StatelessWidget {
 
   Future<List<String>> _fetchBannerImageUrls() async {
     try {
-      final querySnapshot = await FirebaseFirestore.instance.collection('shoppagebanners').doc('banner').get();
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('shoppagebanners')
+          .doc('banner')
+          .get();
       final data = querySnapshot.data();
       List<String> bannerUrls = [];
       for (int i = 1; i <= 10; i++) {
@@ -49,7 +53,6 @@ class SubcategoryGridPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent, // Transparent to allow gradient
         toolbarHeight: 70,
         elevation: 0, // Remove shadow if not needed
@@ -68,9 +71,10 @@ class SubcategoryGridPage extends StatelessWidget {
             padding: const EdgeInsets.only(top: 20),
             child: Row(
               children: [
-                const SizedBox(width: 15),
+                const SizedBox(width: 45),
                 ClipRRect(
-                  child: Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
+                  child:
+                      Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -107,72 +111,80 @@ class SubcategoryGridPage extends StatelessWidget {
             child: Column(
               children: [
                 // Carousel of banners
-               Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: bannerUrls.isNotEmpty
-                    ? CarouselSlider(
-                        items: bannerUrls.map((url) {
-                          return ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: CachedNetworkImage(
-                              imageUrl: url,
-                              fit: BoxFit.cover, // Ensure the image covers the entire area
-                              placeholder: (context, url) => Shimmer.fromColors(
-                                baseColor: Colors.grey[300]!,
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: bannerUrls.isNotEmpty
+                      ? CarouselSlider(
+                          items: bannerUrls.map((url) {
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: CachedNetworkImage(
+                                imageUrl: url,
+                                fit: BoxFit
+                                    .contain, // Ensure the image fits within the container without being cut off
+                                placeholder: (context, url) =>
+                                    Shimmer.fromColors(
+                                  baseColor: Colors.grey[300]!,
+                                  highlightColor: Colors.grey[100]!,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) =>
+                                    Shimmer.fromColors(
+                                  baseColor: Colors.grey[300]!,
+                                  highlightColor: Colors.grey[100]!,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                   ),
                                 ),
                               ),
-                              errorWidget: (context, url, error) => Shimmer.fromColors(
-                                baseColor: Colors.grey[300]!,
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              ),
+                            );
+                          }).toList(),
+                          options: CarouselOptions(
+                            height: 380,
+                            enlargeCenterPage: true,
+                            autoPlay: true,
+                            aspectRatio: 16 / 9,
+                            autoPlayCurve: Curves.fastOutSlowIn,
+                            enableInfiniteScroll: true,
+                            autoPlayAnimationDuration:
+                                const Duration(milliseconds: 800),
+                            viewportFraction: 1,
+                          ),
+                        )
+                      : Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                          );
-                        }).toList(),
-                        options: CarouselOptions(
-                          height: 180,
-                          enlargeCenterPage: true,
-                          autoPlay: true,
-                          aspectRatio: 16 / 9,
-                          autoPlayCurve: Curves.fastOutSlowIn,
-                          enableInfiniteScroll: true,
-                          autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                          viewportFraction: 1,
-                        ),
-                      )
-                    : Shimmer.fromColors(
-                        baseColor: Colors.grey[300]!,
-                        highlightColor: Colors.grey[100]!,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                      ),
-              ),
+                ),
                 const SizedBox(height: 1),
                 // Subcategories grid
                 FutureBuilder<List<Map<String, dynamic>>>(
                   future: _fetchSubcategories(),
                   builder: (context, subcategorySnapshot) {
-                    if (subcategorySnapshot.connectionState == ConnectionState.waiting) {
+                    if (subcategorySnapshot.connectionState ==
+                        ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     } else if (subcategorySnapshot.hasError) {
-                      return Center(child: Text('Error: ${subcategorySnapshot.error}'));
-                    } else if (!subcategorySnapshot.hasData || subcategorySnapshot.data!.isEmpty) {
-                      return const Center(child: Text('No subcategories found.'));
+                      return Center(
+                          child: Text('Error: ${subcategorySnapshot.error}'));
+                    } else if (!subcategorySnapshot.hasData ||
+                        subcategorySnapshot.data!.isEmpty) {
+                      return const Center(
+                          child: Text('No subcategories found.'));
                     }
 
                     final subcategories = subcategorySnapshot.data!;
@@ -181,7 +193,8 @@ class SubcategoryGridPage extends StatelessWidget {
                       child: GridView.builder(
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 4,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
@@ -192,7 +205,8 @@ class SubcategoryGridPage extends StatelessWidget {
                           final subcategory = subcategories[index];
                           return GestureDetector(
                             onTap: () {
-                              print('Selected Subcategory: ${subcategory['name']}');
+                              print(
+                                  'Selected Subcategory: ${subcategory['name']}');
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -206,7 +220,10 @@ class SubcategoryGridPage extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(width: .5, color: const Color.fromARGB(255, 217, 217, 217)),
+                                border: Border.all(
+                                    width: .5,
+                                    color: const Color.fromARGB(
+                                        255, 217, 217, 217)),
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -217,7 +234,8 @@ class SubcategoryGridPage extends StatelessWidget {
                                     height: 33,
                                     width: 33,
                                     fit: BoxFit.cover,
-                                    placeholder: (context, url) => Shimmer.fromColors(
+                                    placeholder: (context, url) =>
+                                        Shimmer.fromColors(
                                       baseColor: Colors.grey[300]!,
                                       highlightColor: Colors.grey[100]!,
                                       child: Container(
@@ -225,11 +243,13 @@ class SubcategoryGridPage extends StatelessWidget {
                                         width: 45,
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
                                         ),
                                       ),
                                     ),
-                                    errorWidget: (context, url, error) => const Icon(
+                                    errorWidget: (context, url, error) =>
+                                        const Icon(
                                       Icons.image_not_supported,
                                       size: 40,
                                       color: Colors.grey,
@@ -238,22 +258,27 @@ class SubcategoryGridPage extends StatelessWidget {
                                   const SizedBox(height: 6),
                                   // Text with fixed height to ensure uniform alignment
                                   Container(
-                                    height: 36, // Adjust height as per your design
+                                    height:
+                                        36, // Adjust height as per your design
                                     alignment: Alignment.center,
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                      child: Text(
-                                        subcategory['name'] ?? '',
-                                        style: const TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 10,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        child: AutoSizeText(
+                                          subcategory['name'] ?? '',
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 10,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          minFontSize:
+                                              8, // Minimum font size if the text needs to be resized
+                                          stepGranularity:
+                                              1, // Step size for font size reduction
+                                        )),
                                   ),
                                 ],
                               ),

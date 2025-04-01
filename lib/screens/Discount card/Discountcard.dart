@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DiscountCardPage extends StatefulWidget {
   const DiscountCardPage({super.key});
@@ -136,7 +137,32 @@ class _DiscountCardPageState extends State<DiscountCardPage> with SingleTickerPr
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (cardno == null)
-                        _buildEmptyCard("You don't have a discount card")
+                        Column(
+                          children: [
+                            _buildEmptyCard("You don't have a discount card"),
+                            const SizedBox(height: 16),
+                            TextButton(
+                              onPressed: () {
+                                _applyForDiscountCard(name, mobile, city, address);
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  
+                                  color: Colors.amber,
+                                  borderRadius: BorderRadius.circular(10)),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.add, color: Colors.black, size: 15,),
+                                    SizedBox(width: 6,),
+                                    const Text('Apply for Discount Card',style: TextStyle(color: Colors.black),),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
                       else if (imageUrl != null)
                         AnimatedBuilder(
                           animation: _flipAnimation,
@@ -305,7 +331,6 @@ class _DiscountCardPageState extends State<DiscountCardPage> with SingleTickerPr
                   controller: _addressController,
                   decoration: const InputDecoration(labelText: 'Address'),
                 ),
-                
               ],
             ),
           ),
@@ -322,10 +347,8 @@ class _DiscountCardPageState extends State<DiscountCardPage> with SingleTickerPr
                 if (userId != null) {
                   await FirebaseFirestore.instance.collection('users').doc(userId).update({
                     'name': _nameController.text,
-                    
                     'mobile': _mobileController.text,
                     'address': _addressController.text,
-                    
                   });
                 }
                 Navigator.pop(context);
@@ -337,4 +360,26 @@ class _DiscountCardPageState extends State<DiscountCardPage> with SingleTickerPr
       },
     );
   }
+
+  void _applyForDiscountCard(String? name, String? mobile, String? city, String? address) {
+  final whatsappMessage = '''
+*Discount Card Application*
+
+Name: $name
+Mobile: $mobile
+City: $city
+Address: $address
+
+Please process my application for a discount card.
+''';
+
+  // Ensure the phone number is correct and properly formatted
+  final phoneNumber = '918138878717'; // Replace with the actual phone number
+
+  // Construct the WhatsApp URL
+  final whatsappUrl = 'https://wa.me/$phoneNumber?text=${Uri.encodeComponent(whatsappMessage)}';
+
+  // Launch the URL
+  launchUrl(Uri.parse(whatsappUrl));
+}
 }

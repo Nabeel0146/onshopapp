@@ -74,76 +74,79 @@ class ProductCategoriesPage extends StatelessWidget {
           ),
         ),
       ),
-      body: FutureBuilder<List<String>>(
-        future: _fetchBannerImageUrls(),
-        builder: (context, bannerSnapshot) {
-          if (bannerSnapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: SingleChildScrollView(
+        child: FutureBuilder<List<String>>(
+          future: _fetchBannerImageUrls(),
+          builder: (context, bannerSnapshot) {
+            if (bannerSnapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          final bannerUrls = bannerSnapshot.data ?? [];
+            final bannerUrls = bannerSnapshot.data ?? [];
 
-          return Column(
-            children: [
-              // Carousel of banners
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: bannerUrls.isNotEmpty
-                    ? CarouselSlider(
-                        items: bannerUrls.map((url) {
-                          return ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: CachedNetworkImage(
-                              imageUrl: url,
-                              fit: BoxFit.cover, // Ensure the image covers the entire area
-                              placeholder: (context, url) => Shimmer.fromColors(
-                                baseColor: Colors.grey[300]!,
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
+            return Column(
+              children: [
+                // Carousel of banners
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: bannerUrls.isNotEmpty
+                      ? CarouselSlider(
+                          items: bannerUrls.map((url) {
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: CachedNetworkImage(
+                                imageUrl: url,
+                                fit: BoxFit.contain, // Ensure the image fits within the container without being cut off
+                                placeholder: (context, url) =>
+                                    Shimmer.fromColors(
+                                  baseColor: Colors.grey[300]!,
+                                  highlightColor: Colors.grey[100]!,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) =>
+                                    Shimmer.fromColors(
+                                  baseColor: Colors.grey[300]!,
+                                  highlightColor: Colors.grey[100]!,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                   ),
                                 ),
                               ),
-                              errorWidget: (context, url, error) => Shimmer.fromColors(
-                                baseColor: Colors.grey[300]!,
-                                highlightColor: Colors.grey[100]!,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                              ),
+                            );
+                          }).toList(),
+                          options: CarouselOptions(
+                            height: 380,
+                            enlargeCenterPage: true,
+                            autoPlay: true,
+                            aspectRatio: 16 / 9,
+                            autoPlayCurve: Curves.fastOutSlowIn,
+                            enableInfiniteScroll: true,
+                            autoPlayAnimationDuration:
+                                const Duration(milliseconds: 800),
+                            viewportFraction: 1,
+                          ),
+                        )
+                      : Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                          );
-                        }).toList(),
-                        options: CarouselOptions(
-                          height: 180,
-                          enlargeCenterPage: true,
-                          autoPlay: true,
-                          aspectRatio: 16 / 9,
-                          autoPlayCurve: Curves.fastOutSlowIn,
-                          enableInfiniteScroll: true,
-                          autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                          viewportFraction: 1,
-                        ),
-                      )
-                    : Shimmer.fromColors(
-                        baseColor: Colors.grey[300]!,
-                        highlightColor: Colors.grey[100]!,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                      ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: StreamBuilder<QuerySnapshot>(
+                ),
+                const SizedBox(height: 16),
+                StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance.collection('productcategories').snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -157,6 +160,8 @@ class ProductCategoriesPage extends StatelessWidget {
                     final categories = snapshot.data!.docs;
 
                     return GridView.builder(
+                      shrinkWrap: true, // Allow GridView to shrink-wrap its content
+                      physics: const NeverScrollableScrollPhysics(), // Disable GridView's own scrolling
                       padding: const EdgeInsets.all(16.0),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
@@ -230,10 +235,10 @@ class ProductCategoriesPage extends StatelessWidget {
                     );
                   },
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }

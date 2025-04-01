@@ -5,6 +5,8 @@ import 'package:onshopapp/screens/Products/Productcategoriespage.dart';
 import 'package:onshopapp/screens/Products/Productspage.dart';
 import 'package:onshopapp/screens/homepage.dart';
 import 'package:onshopapp/screens/subcategory_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class MainScreen extends StatefulWidget {
   @override
@@ -27,6 +29,68 @@ class _MainScreenState extends State<MainScreen> {
       _selectedIndex = index;
     });
     _pageController.jumpToPage(index); // Update the PageView to the selected page
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _showPopupAfterDelay(); // Trigger the popup
+  }
+
+  Future<void> _showPopupAfterDelay() async {
+    await Future.delayed(const Duration(seconds: 5));
+
+    try {
+      final popupDoc = await FirebaseFirestore.instance
+          .collection('Popup')
+          .doc('welcomePopup')
+          .get();
+
+      final popupData = popupDoc.data();
+      final imageUrl = popupData?['imageUrl'] as String?;
+      final isActive = popupData?['isActive'] as bool? ?? false;
+
+      if (isActive && imageUrl != null && imageUrl.isNotEmpty) {
+        if (mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: true,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                contentPadding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(16),
+                      ),
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        width: 400,
+                        height: 500,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Close'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        }
+      }
+    } catch (error) {
+      print("Error fetching popup data: $error");
+    }
   }
 
   @override

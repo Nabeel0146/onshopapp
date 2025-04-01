@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadInitialData();
-    _showPopupAfterDelay(); // Trigger the popup
   }
 
   void _loadInitialData() {
@@ -34,53 +34,54 @@ class _HomePageState extends State<HomePage> {
 
   List<String> bannerImages = [];
 
-Future<void> _fetchBannerImage() async {
-  try {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('Homepage_banner')
-        .doc('banner')
-        .get();
+  Future<void> _fetchBannerImage() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('Homepage_banner')
+          .doc('banner')
+          .get();
 
-    // Extract banners and filter out null or empty values
-    setState(() {
-      bannerImages = [
-        snapshot.data()?['banner1'] as String?,
-        snapshot.data()?['banner2'] as String?,
-        snapshot.data()?['banner3'] as String?,
-        snapshot.data()?['banner4'] as String?,
-        snapshot.data()?['banner5'] as String?,
-        snapshot.data()?['banner6'] as String?,
-        snapshot.data()?['banner7'] as String?,
-        snapshot.data()?['banner8'] as String?,
-        snapshot.data()?['banner9'] as String?,
-        snapshot.data()?['banner10'] as String?,
-        snapshot.data()?['banner11'] as String?,
-        snapshot.data()?['banner12'] as String?,
-        snapshot.data()?['banner13'] as String?,
-        snapshot.data()?['banner14'] as String?,
-        snapshot.data()?['banner15'] as String?,
-        snapshot.data()?['banner16'] as String?,
-        snapshot.data()?['banner17'] as String?,
-        snapshot.data()?['banner18'] as String?,
-        snapshot.data()?['banner19'] as String?,
-        snapshot.data()?['banner20'] as String?,
-        snapshot.data()?['banner21'] as String?,
-        snapshot.data()?['banner22'] as String?,
-        snapshot.data()?['banner23'] as String?,
-        snapshot.data()?['banner24'] as String?,
-        snapshot.data()?['banner25'] as String?,
-        snapshot.data()?['banner26'] as String?,
-        snapshot.data()?['banner27'] as String?,
-        snapshot.data()?['banner28'] as String?,
-        snapshot.data()?['banner29'] as String?,
-        snapshot.data()?['banner30'] as String?,
-      ].where((url) => url != null && url.isNotEmpty).cast<String>().toList();
-    });
-  } catch (error) {
-    print("Error fetching banner: $error");
+      // Extract banners and filter out null or empty values
+      setState(() {
+        bannerImages = [
+          snapshot.data()?['banner1'] as String?,
+          snapshot.data()?['banner2'] as String?,
+          snapshot.data()?['banner3'] as String?,
+          snapshot.data()?['banner4'] as String?,
+          snapshot.data()?['banner5'] as String?,
+          snapshot.data()?['banner6'] as String?,
+          snapshot.data()?['banner7'] as String?,
+          snapshot.data()?['banner8'] as String?,
+          snapshot.data()?['banner9'] as String?,
+          snapshot.data()?['banner10'] as String?,
+          snapshot.data()?['banner11'] as String?,
+          snapshot.data()?['banner12'] as String?,
+          snapshot.data()?['banner13'] as String?,
+          snapshot.data()?['banner14'] as String?,
+          snapshot.data()?['banner15'] as String?,
+          snapshot.data()?['banner16'] as String?,
+          snapshot.data()?['banner17'] as String?,
+          snapshot.data()?['banner18'] as String?,
+          snapshot.data()?['banner19'] as String?,
+          snapshot.data()?['banner20'] as String?,
+          snapshot.data()?['banner21'] as String?,
+          snapshot.data()?['banner22'] as String?,
+          snapshot.data()?['banner23'] as String?,
+          snapshot.data()?['banner24'] as String?,
+          snapshot.data()?['banner25'] as String?,
+          snapshot.data()?['banner26'] as String?,
+          snapshot.data()?['banner27'] as String?,
+          snapshot.data()?['banner28'] as String?,
+          snapshot.data()?['banner29'] as String?,
+          snapshot.data()?['banner30'] as String?,
+        ].where((url) => url != null && url.isNotEmpty).cast<String>().toList();
+      });
+    } catch (error) {
+      print("Error fetching banner: $error");
+    }
   }
-}
-Widget buildBanner(List<String> bannerImages) {
+
+  Widget buildBanner(List<String> bannerImages) {
   if (bannerImages.isNotEmpty) {
     return CarouselSlider(
       options: CarouselOptions(
@@ -96,11 +97,29 @@ Widget buildBanner(List<String> bannerImages) {
         return Builder(
           builder: (BuildContext context) {
             return ClipRRect(
-              borderRadius: BorderRadius.circular(0),
-              child: Image.network(
-                imageUrl,
+              borderRadius: BorderRadius.circular(0), // No rounded corners for banners
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
                 width: double.infinity,
-                fit: BoxFit.cover,
+                fit: BoxFit.fitWidth, // Ensure the image fits the width without being cut off
+                placeholder: (context, url) => Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
             );
           },
@@ -108,18 +127,28 @@ Widget buildBanner(List<String> bannerImages) {
       }).toList(),
     );
   } else {
-    return Container(
+    return SizedBox(
       height: 150,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        color: Colors.grey[300],
-      ),
-      child: const Center(
-        child: Text(
-          'Loading banners...',
-          style: TextStyle(color: Colors.grey),
-        ),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 3, // Number of shimmer placeholders to show
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Container(
+                width: MediaQuery.of(context).size.width, // Full width of the screen
+                height: 150,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -127,8 +156,10 @@ Widget buildBanner(List<String> bannerImages) {
 
   Future<void> _fetchCities() async {
     try {
-      final cityDocs = await FirebaseFirestore.instance.collection('cities').get();
-      final cityNames = cityDocs.docs.map((doc) => doc['name'] as String).toList();
+      final cityDocs =
+          await FirebaseFirestore.instance.collection('cities').get();
+      final cityNames =
+          cityDocs.docs.map((doc) => doc['name'] as String).toList();
 
       final userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId == null) return;
@@ -141,7 +172,8 @@ Widget buildBanner(List<String> bannerImages) {
 
       setState(() {
         cities = cityNames;
-        selectedCity = cityNames.contains(userCity) ? userCity : cityNames.firstOrNull;
+        selectedCity =
+            cityNames.contains(userCity) ? userCity : cityNames.firstOrNull;
       });
     } catch (error) {
       print("Error fetching cities: $error");
@@ -155,62 +187,7 @@ Widget buildBanner(List<String> bannerImages) {
     );
   }
 
-  void _showPopupAfterDelay() async {
-  await Future.delayed(const Duration(seconds: 5));
-
-  try {
-    final popupDoc = await FirebaseFirestore.instance
-        .collection('Popup')
-        .doc('welcomePopup')
-        .get();
-
-    final popupData = popupDoc.data();
-    final imageUrl = popupData?['imageUrl'] as String?;
-    final isActive = popupData?['isActive'] as bool? ?? false;
-
-    if (isActive && imageUrl != null && imageUrl.isNotEmpty) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: true,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              contentPadding: EdgeInsets.zero,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16),
-                    ),
-                    child: CachedNetworkImage(
-                      imageUrl : imageUrl,
-                      width: 400,
-                      height: 500,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('Close'),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      }
-    }
-  } catch (error) {
-    print("Error fetching popup data: $error");
-  }
-}
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -246,86 +223,131 @@ Widget buildBanner(List<String> bannerImages) {
     );
   }
 
- Widget _buildAdsSection() {
-  return FutureBuilder<DocumentSnapshot>(
-    future: FirebaseFirestore.instance.collection('homepageads').doc('ads').get(),
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return const Center(child: CircularProgressIndicator());
-      }
-      if (!snapshot.hasData || snapshot.data == null || snapshot.data!.data() == null) {
-        return const Center(child: Text("No ads available"));
-      }
+  Widget _buildAdsSection() {
+    return FutureBuilder<DocumentSnapshot>(
+      future:
+          FirebaseFirestore.instance.collection('homepageads').doc('ads').get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData ||
+            snapshot.data == null ||
+            snapshot.data!.data() == null) {
+          return const Center(child: Text("No ads available"));
+        }
 
-      // Extract ads and filter out null/empty values
-      Map<String, dynamic> data = snapshot.data!.data() as Map<String, dynamic>;
-      List<String> adImages = [
-        data['ad1'] as String?,
-        data['ad2'] as String?,
-        data['ad3'] as String?,
-        data['ad4'] as String?,
-        data['ad5'] as String?,
-        data['ad6'] as String?,
-        data['ad7'] as String?,
-        data['ad8'] as String?,
-        data['ad9'] as String?,
-        data['ad10'] as String?,
-      ].where((url) => url != null && url.isNotEmpty).cast<String>().toList();
+        // Extract ads and filter out null/empty values
+        Map<String, dynamic> data =
+            snapshot.data!.data() as Map<String, dynamic>;
+        List<String> adImages = [
+          data['ad1'] as String?,
+          data['ad2'] as String?,
+          data['ad3'] as String?,
+          data['ad4'] as String?,
+          data['ad5'] as String?,
+          data['ad6'] as String?,
+          data['ad7'] as String?,
+          data['ad8'] as String?,
+          data['ad9'] as String?,
+          data['ad10'] as String?,
+        ].where((url) => url != null && url.isNotEmpty).cast<String>().toList();
 
-      if (adImages.isEmpty) {
-        return const Center(child: Text("No ads available"));
-      }
+        if (adImages.isEmpty) {
+          return const Center(child: Text("No ads available"));
+        }
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Sponsored Ads",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            CarouselSlider.builder(
-              itemCount: adImages.length,
-              options: CarouselOptions(
-
-                height: 400, // Square size
-                viewportFraction: 1, // Adjusts width for square images
-                enableInfiniteScroll: true,
-                autoPlay: true,
-                autoPlayInterval: const Duration(seconds: 3),
-                autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                enlargeCenterPage: true,
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Sponsored Ads",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              itemBuilder: (context, index, realIndex) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    adImages[index],
-                    height: 400,
-                    width: 400,
-                    fit: BoxFit.cover,
-                  ),
-                );
-              },
-            ),
-            SizedBox(height: 10,)
-          ],
-        ),
-      );
-    },
-  );
-}
+              const SizedBox(height: 10),
+              CarouselSlider.builder(
+                itemCount: adImages.length,
+                options: CarouselOptions(
+                  height:
+                      380, // Adjusted height to match the previous reference
+                  viewportFraction: 1, // Adjusts width for square images
+                  enableInfiniteScroll: true,
+                  autoPlay: true,
+                  autoPlayInterval: const Duration(seconds: 3),
+                  autoPlayAnimationDuration: const Duration(milliseconds: 800),
+                  enlargeCenterPage: true,
+                ),
+                itemBuilder: (context, index, realIndex) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(10), // Rounded corners
+                    child: CachedNetworkImage(
+                      imageUrl: adImages[index],
+                      fit: BoxFit
+                          .contain, // Ensure the image fits within the container without being cut off
+                      placeholder: (context, url) => Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              SizedBox(
+                height: 10,
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-Widget _buildProductCategories() {
+  Widget _buildProductCategories() {
   return FutureBuilder<QuerySnapshot>(
     future: FirebaseFirestore.instance.collection('productcategories').get(),
     builder: (context, snapshot) {
       if (snapshot.connectionState == ConnectionState.waiting) {
-        return const SizedBox(
+        return SizedBox(
           height: 75,
-          child: Center(child: CircularProgressIndicator()),
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: 5, // Number of placeholders to show
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    width: 62,
+                    height: 65,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
         );
       }
 
@@ -355,7 +377,8 @@ Widget _buildProductCategories() {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ProductsPage(category: name ?? 'Category'),
+                      builder: (context) =>
+                          ProductsPage(category: name ?? 'Category'),
                     ),
                   );
                 },
@@ -363,7 +386,7 @@ Widget _buildProductCategories() {
                   width: 62,
                   height: 65,
                   decoration: BoxDecoration(
-                    color: Color.fromARGB(255, 255, 240, 201),
+                    color: Color.fromARGB(255, 255, 246, 224),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Column(
@@ -372,10 +395,11 @@ Widget _buildProductCategories() {
                       imageUrl != null && imageUrl.isNotEmpty
                           ? CachedNetworkImage(
                               imageUrl: imageUrl,
-                              width: 42,
-                              height: 42,
+                              width: 48,
+                              height: 48,
                               fit: BoxFit.cover,
-                              placeholder: (context, url) => Shimmer.fromColors(
+                              placeholder: (context, url) =>
+                                  Shimmer.fromColors(
                                 baseColor: Colors.grey[300]!,
                                 highlightColor: Colors.grey[100]!,
                                 child: Container(
@@ -387,7 +411,8 @@ Widget _buildProductCategories() {
                                   ),
                                 ),
                               ),
-                              errorWidget: (context, url, error) => Shimmer.fromColors(
+                              errorWidget: (context, url, error) =>
+                                  Shimmer.fromColors(
                                 baseColor: Colors.grey[300]!,
                                 highlightColor: Colors.grey[100]!,
                                 child: Container(
@@ -401,12 +426,16 @@ Widget _buildProductCategories() {
                               ),
                             )
                           : const Icon(Icons.category, size: 32),
-                      const SizedBox(height: 4),
-                      Text(
-                        name ?? 'Category',
-                        style: const TextStyle(fontSize: 12),
-                        textAlign: TextAlign.center,
-                      ),
+                      const SizedBox(height: 3),
+                     AutoSizeText(
+  name ?? 'Category',
+  style: const TextStyle(fontSize: 11),
+  textAlign: TextAlign.center,
+  maxLines: 2,
+  overflow: TextOverflow.ellipsis,
+  minFontSize: 8, // Minimum font size if the text needs to be resized
+  stepGranularity: 1, // Step size for font size reduction
+)
                     ],
                   ),
                 ),
@@ -450,35 +479,36 @@ Widget _buildProductCategories() {
     );
   }
 
-Widget _buildCategoryTiles() {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 15),
-    child: SizedBox(
-      height: 90,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          buildLargeCategoryTile(
-            context,
-            'Shops',
-            'Find Product Stores',
-            'asset/shopicon.png',
-            Colors.red,
-            'shopcategories',
-          ),
-          buildLargeCategoryTile(
-            context,
-            'Services',
-            'Find Service Stores',
-            'asset/serviceicon.png',
-            Colors.red,
-            'servicecategories',
-          ),
-        ],
+  Widget _buildCategoryTiles() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      child: SizedBox(
+        height: 90,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            buildLargeCategoryTile(
+              context,
+              'Shops',
+              'Find Product Stores',
+              'asset/shopicon.png',
+              Colors.red,
+              'shopcategories',
+            ),
+            buildLargeCategoryTile(
+              context,
+              'Services',
+              'Find Service Stores',
+              'asset/serviceicon.png',
+              Colors.red,
+              'servicecategories',
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
+
   Widget _buildOtherCategories() {
     return Container(
       color: Colors.grey[200],

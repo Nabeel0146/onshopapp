@@ -292,20 +292,20 @@ class HospitalProfilePage extends StatelessWidget {
                           String doctorId = doctors[index].id;
 
                           return Container(
-                            
                             decoration: BoxDecoration(
-                              
-  border: Border.all(color: Colors.grey, width: 1),
-  borderRadius: BorderRadius.circular(10),
-  boxShadow: [
-    BoxShadow(
-      color: Colors.grey.withOpacity(0.2), // Shadow color with opacity
-      spreadRadius: 1, // Spread radius
-      blurRadius: 5, // Blur radius
-      offset: const Offset(0, 2), // Offset in the x and y directions
-    ),
-  ],
-),
+                              border: Border.all(color: Colors.grey, width: 1),
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(
+                                      0.1), // Shadow color with opacity
+                                  spreadRadius: 1, // Spread radius
+                                  blurRadius: 2, // Blur radius
+                                  offset: const Offset(
+                                      0, 1), // Offset in the x and y directions
+                                ),
+                              ],
+                            ),
                             child: Padding(
                               padding: const EdgeInsets.all(
                                   8.0), // Add padding inside the border

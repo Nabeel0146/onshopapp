@@ -16,6 +16,8 @@ class _DiscountCardPageState extends State<DiscountCardPage> with SingleTickerPr
   late AnimationController _flipController;
   late Animation<double> _flipAnimation;
 
+  
+
   TextEditingController _nameController = TextEditingController();
   TextEditingController _cityController = TextEditingController();
   TextEditingController _mobileController = TextEditingController();
@@ -31,6 +33,8 @@ class _DiscountCardPageState extends State<DiscountCardPage> with SingleTickerPr
       duration: const Duration(milliseconds: 800), // Duration of the spin animation
     );
     _flipAnimation = Tween<double>(begin: 0, end: 1).animate(_flipController);
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+  print('User UID: $userId');
   }
 
   @override
@@ -95,7 +99,7 @@ class _DiscountCardPageState extends State<DiscountCardPage> with SingleTickerPr
         ),
       ),
       body: Container(
-        padding: EdgeInsets.only(top: 100),
+        
         child: StreamBuilder<DocumentSnapshot>(
           stream: _getUserDataStream(),
           builder: (context, snapshot) {
@@ -132,7 +136,7 @@ class _DiscountCardPageState extends State<DiscountCardPage> with SingleTickerPr
                 final imageUrl = imageSnapshot.data?['image_url'] as String?;
         
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.only(left:16.0, right: 16, bottom: 16, top: 100),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -183,7 +187,7 @@ class _DiscountCardPageState extends State<DiscountCardPage> with SingleTickerPr
                                   _flipController.stop(); // Stop the spin animation
                                   return Container(
                                     width: double.infinity,
-                                    height: 240,
+                                    height: 220,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(8),
                                       image: DecorationImage(
@@ -195,8 +199,8 @@ class _DiscountCardPageState extends State<DiscountCardPage> with SingleTickerPr
                                       alignment: Alignment.center,
                                       children: [
                                         Positioned(
-                                          top: 130,
-                                          left: 70,
+                                          top: 110,
+                                          right: 120,
                                           child: Text(
                                             '$name',
                                             style: const TextStyle(
@@ -207,25 +211,25 @@ class _DiscountCardPageState extends State<DiscountCardPage> with SingleTickerPr
                                           ),
                                         ),
                                         Positioned(
-                                          top: 160,
-                                          left: 60,
+                                          top: 135,
+                                          right: 120,
                                           child: Text(
                                             '$cardno',
                                             style: const TextStyle(
                                               fontSize: 26,
-                                              fontWeight: FontWeight.bold,
+                                              fontWeight: FontWeight.w400,
                                               color: Colors.white,
                                             ),
                                           ),
                                         ),
                                         if (expirydate != null)
                                           Positioned(
-                                            top: 190,
-                                            left: 100,
+                                            top: 170,
+                                            right: 115,
                                             child: Text(
                                               'Expiry Date: $expirydate',
                                               style: const TextStyle(
-                                                fontSize: 13,
+                                                fontSize: 11,
                                                 fontWeight: FontWeight.bold,
                                                 color: Colors.white,
                                               ),
@@ -239,7 +243,9 @@ class _DiscountCardPageState extends State<DiscountCardPage> with SingleTickerPr
                             );
                           },
                         ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 16),
+                      Text('Name: $name', style: const TextStyle(fontSize: 16)),
+                      const SizedBox(height: 8),
                       Text('City: $city', style: const TextStyle(fontSize: 16)),
                       const SizedBox(height: 8),
                       Text('Mobile: $mobile', style: const TextStyle(fontSize: 16)),

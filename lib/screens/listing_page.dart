@@ -96,9 +96,12 @@ class _ListingPageState extends State<ListingPage> {
       }
 
       final querySnapshot = await query.get();
-      return querySnapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
+    return querySnapshot.docs.map((doc) {
+  final data = doc.data();
+  data['documentId'] = doc.id; // 👈 Add the Firestore doc ID here
+  return data;
+}).toList();
+
     } catch (e) {
       print('Error fetching items: $e');
       return [];
@@ -106,8 +109,23 @@ class _ListingPageState extends State<ListingPage> {
   }
 
   Future<void> _checkCustomerID(Map<String, dynamic> item) async {
-    if (item['associate'] == true) {
-      if (item['lock'] == true) {
+  if (item['associate'] == true) {
+    if (item['lock'] == true) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? storedCustomerID = prefs.getString('customerID_${item['id']}');
+
+      if (storedCustomerID != null && storedCustomerID == item['customerid']) {
+        print('Navigating to ShopProfilePage with document ID: ${item['documentId']}');
+
+        // If the stored customerID matches, navigate directly to ShopProfilePage
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ShopProfilePage(shopData: item),
+          ),
+        );
+      } else {
+        // If no stored customerID or it doesn't match, prompt the user to enter the shopID
         String? customerID;
         await showDialog<String>(
           context: context,
@@ -179,6 +197,8 @@ class _ListingPageState extends State<ListingPage> {
         if (customerID != null) {
           // Check if the customerID matches the one in the item's document
           if (item['customerid'] == customerID) {
+            // Store the customerID for future use
+            prefs.setString('customerID_${item['id']}', customerID!);
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -191,17 +211,18 @@ class _ListingPageState extends State<ListingPage> {
             );
           }
         }
-      } else {
-        // Directly navigate to ShopProfilePage if 'lock' is false
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ShopProfilePage(shopData: item),
-          ),
-        );
       }
+    } else {
+      // Directly navigate to ShopProfilePage if 'lock' is false
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ShopProfilePage(shopData: item),
+        ),
+      );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -240,7 +261,7 @@ class _ListingPageState extends State<ListingPage> {
                         'On Shop',
                         style: TextStyle(
                           color: Colors.black,
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -248,65 +269,69 @@ class _ListingPageState extends State<ListingPage> {
                   ),
                 ),
                 if (cities.isNotEmpty)
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        color: Colors.black,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 5),
-                      SizedBox(
-                        width: 150, // Adjust width as needed
-                        child: DropdownSearch<String>(
-                          items: cities..sort(), // Sort cities alphabetically
-                          selectedItem: selectedCity,
-                          popupProps: PopupProps.menu(
-                            showSearchBox: true, // Enable search functionality
-                            searchFieldProps: TextFieldProps(
-                              decoration: InputDecoration(
-                                hintText: "Search city...",
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                          ),
-                          dropdownButtonProps: const DropdownButtonProps(
-                            icon: Icon(Icons.arrow_drop_down,
-                                color: Colors.black),
-                          ),
-                          dropdownDecoratorProps: DropDownDecoratorProps(
-                            baseStyle: TextStyle(color: Colors.black),
-                            dropdownSearchDecoration: InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
-                                borderSide: BorderSide.none,
-                              ),
-                              filled: true,
-                              fillColor: Colors.transparent,
-                            ),
-                          ),
-                          onChanged: (newValue) {
-                            setState(() {
-                              selectedCity = newValue;
-                            });
+                 Row(
+  children: [
+    const Icon(
+      Icons.location_on,
+      color: Colors.black,
+      size: 16,
+    ),
+    const SizedBox(width: 1),
+    SizedBox(
+      width: 150, // Adjust width as needed
+      child: DropdownSearch<String>(
+        items: cities..sort(), // Sort cities alphabetically
+        selectedItem: selectedCity,
+        popupProps: PopupProps.menu(
+          showSearchBox: true, // Enable search functionality
+          searchFieldProps: TextFieldProps(
+            decoration: InputDecoration(
+              hintText: "Search city...",
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        dropdownButtonProps: const DropdownButtonProps(
+          icon: Icon(Icons.arrow_drop_down, color: Colors.black),
+        ),
+        dropdownDecoratorProps: DropDownDecoratorProps(
+          baseStyle: TextStyle(color: Colors.black),
+          dropdownSearchDecoration: InputDecoration(
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide.none,
+            ),
+            filled: true,
+            fillColor: Colors.transparent,
+          ),
+        ),
+        onChanged: (newValue) {
+          setState(() {
+            selectedCity = newValue;
+          });
 
-                            if (newValue != null) {
-                              SharedPreferences.getInstance().then((prefs) {
-                                prefs.setString('selectedCity', newValue);
-                              });
-                            }
+          if (newValue != null) {
+            SharedPreferences.getInstance().then((prefs) {
+              prefs.setString('selectedCity', newValue);
+            });
+          }
 
-                            // Fetch offers for the new city
-                            setState(
-                                () {}); // Ensure this method is called to reload the page
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+          // Fetch offers for the new city
+          setState(() {}); // Ensure this method is called to reload the page
+        },
+        // Ensure the selected city text is on a single line
+        dropdownBuilder: (context, selectedItem) {
+          return Text(
+            selectedItem ?? 'Select City',
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: Colors.black),
+          );
+        },
+      ),
+    ),
+  ],
+),
                 const SizedBox(width: 10),
               ],
             ),
@@ -345,6 +370,7 @@ class _ListingPageState extends State<ListingPage> {
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final item = items[index];
+                  print('Document ID: ${item['documentId']}'); // 👈 Here
                   return GestureDetector(
                     onTap: () {
                       _checkCustomerID(item);

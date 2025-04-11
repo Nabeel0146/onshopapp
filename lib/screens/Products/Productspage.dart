@@ -1,9 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProductsPage extends StatefulWidget {
@@ -16,8 +14,6 @@ class ProductsPage extends StatefulWidget {
 }
 
 class _ProductsPageState extends State<ProductsPage> {
-  String? selectedCity;
-  List<String> cities = [];
   late Future<void> _initializationFuture;
 
   @override
@@ -27,73 +23,17 @@ class _ProductsPageState extends State<ProductsPage> {
   }
 
   Future<void> _initializeData() async {
-    await _fetchCities();
-    await _loadSelectedCity();
+    // Initialization logic if needed
   }
 
-  Future<void> _fetchCities() async {
+  Future<List<Map<String, dynamic>>> _fetchFilteredItems(String category) async {
     try {
-      final querySnapshot =
-          await FirebaseFirestore.instance.collection('cities').get();
-      final cityList =
-          querySnapshot.docs.map((doc) => doc['name'] as String).toList();
-      setState(() {
-        cities = cityList;
-      });
-    } catch (e) {
-      print('Error fetching cities: $e');
-    }
-  }
-
-  Future<void> _loadSelectedCity() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      selectedCity = prefs.getString('selectedCity');
-    });
-
-    if (selectedCity == null) {
-      await _fetchLoggedInUserCity();
-    }
-  }
-
-  Future<void> _fetchLoggedInUserCity() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-      if (userDoc.exists) {
-        final userCity = userDoc.data()?['city'] as String?;
-        setState(() {
-          selectedCity = userCity ?? (cities.isNotEmpty ? cities.first : null);
-        });
-
-        final prefs = await SharedPreferences.getInstance();
-        if (selectedCity != null) {
-          prefs.setString('selectedCity', selectedCity!);
-        }
-      }
-    } catch (e) {
-      print('Error fetching user city: $e');
-    }
-  }
-
-  Future<List<Map<String, dynamic>>> _fetchFilteredItems(
-      String category, String? city) async {
-    try {
-      Query<Map<String, dynamic>> query = FirebaseFirestore.instance
+      final querySnapshot = await FirebaseFirestore.instance
           .collection('products')
           .where('category', isEqualTo: category)
-          .where('display', isEqualTo: true);
+          .where('display', isEqualTo: true)
+          .get();
 
-      if (city != null) {
-        query = query.where('city', isEqualTo: city);
-      }
-
-      final querySnapshot = await query.get();
       return querySnapshot.docs
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
@@ -133,7 +73,6 @@ class _ProductsPageState extends State<ProductsPage> {
     Address: $userAddress
     """;
 
-    // Ensure the URL is a plain string without HTML tags
     final uri = Uri.parse('https://wa.me/$formattedPhoneNumber?text=${Uri.encodeComponent(productDetails)}');
 
     if (await canLaunchUrl(uri)) {
@@ -169,8 +108,7 @@ class _ProductsPageState extends State<ProductsPage> {
               children: [
                 const SizedBox(width: 45),
                 ClipRRect(
-                  child:
-                      Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
+                  child: Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -189,66 +127,6 @@ class _ProductsPageState extends State<ProductsPage> {
                     ],
                   ),
                 ),
-                if (cities.isNotEmpty)
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        color: Colors.black,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 5),
-                      SizedBox(
-                        width: 150, // Adjust width as needed
-                        child: DropdownSearch<String>(
-                          items: cities..sort(), // Sort cities alphabetically
-                          selectedItem: selectedCity,
-                          popupProps: PopupProps.menu(
-                            showSearchBox: true, // Enable search functionality
-                            searchFieldProps: TextFieldProps(
-                              decoration: InputDecoration(
-                                hintText: "Search city...",
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                          ),
-                          dropdownButtonProps: const DropdownButtonProps(
-                            icon: Icon(Icons.arrow_drop_down,
-                                color: Colors.black),
-                          ),
-                          dropdownDecoratorProps: DropDownDecoratorProps(
-                            baseStyle: TextStyle(color: Colors.black),
-                            dropdownSearchDecoration: InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
-                                borderSide: BorderSide.none,
-                              ),
-                              filled: true,
-                              fillColor: Colors.transparent,
-                            ),
-                          ),
-                          onChanged: (newValue) {
-                            setState(() {
-                              selectedCity = newValue;
-                            });
-
-                            if (newValue != null) {
-                              SharedPreferences.getInstance().then((prefs) {
-                                prefs.setString('selectedCity', newValue);
-                              });
-                            }
-
-                            // Fetch offers for the new city
-                            setState(() {}); // Ensure this method is called to reload the page
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                const SizedBox(width: 10),
               ],
             ),
           ),
@@ -264,7 +142,7 @@ class _ProductsPageState extends State<ProductsPage> {
               return const Center(child: CircularProgressIndicator());
             }
             return FutureBuilder<List<Map<String, dynamic>>>(
-              future: _fetchFilteredItems(widget.category, selectedCity),
+              future: _fetchFilteredItems(widget.category),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());

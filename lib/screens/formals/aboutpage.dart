@@ -33,6 +33,38 @@ class AboutPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             _buildSection(
+              icon: Icons.shopping_cart,
+              title: "Explore Products by City",
+              subtitle: "“Discover Products in Malappuram”",
+              description:
+                  "Browse products available in different cities, starting with Malappuram, and order directly through WhatsApp.",
+            ),
+            const SizedBox(height: 16),
+            _buildSection(
+              icon: Icons.verified,
+              title: "Verified Shop Profiles",
+              subtitle: "“Trustworthy Local Shops”",
+              description:
+                  "Check verified shop profiles, explore their products, and place orders with confidence.",
+            ),
+            const SizedBox(height: 16),
+            _buildSection(
+              icon: Icons.storefront,
+              title: "Manage Your Business",
+              subtitle: "“Grow Your Local Business”",
+              description:
+                  "List your shop, showcase your products, and manage your business efficiently through OnShop.",
+            ),
+            const SizedBox(height: 16),
+            _buildSection(
+              icon: Icons.card_giftcard,
+              title: "Virtual Discount Card",
+              subtitle: "“Exclusive Savings for You”",
+              description:
+                  "Get a virtual discount card to enjoy exclusive deals and offers from participating stores.",
+            ),
+            const SizedBox(height: 16),
+            _buildSection(
               icon: Icons.local_offer,
               title: "Discounts",
               subtitle: "“Exciting Deals & Discounts”",
@@ -41,11 +73,27 @@ class AboutPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _buildSection(
-              icon: Icons.storefront,
+              icon: Icons.store,
               title: "Shops",
               subtitle: "“Explore Local Shops”",
               description:
                   "Find a variety of shops near you, offering everything from daily essentials to unique products.",
+            ),
+            const SizedBox(height: 16),
+            _buildSection(
+              icon: Icons.local_hospital,
+              title: "Hospitals",
+              subtitle: "“Find Hospitals & Doctors”",
+              description:
+                  "Explore hospitals, check available doctors, and see their consultation timings.",
+            ),
+            const SizedBox(height: 16),
+            _buildSection(
+              icon: Icons.work,
+              title: "Jobs",
+              subtitle: "“Find & Apply for Jobs”",
+              description:
+                  "Explore job opportunities in your area and apply for jobs that match your skills and experience.",
             ),
             const SizedBox(height: 16),
             _buildSection(
@@ -62,14 +110,6 @@ class AboutPage extends StatelessWidget {
               subtitle: "“Find Workers”",
               description:
                   "Easily connect with professionals and skilled workers for your projects and tasks.",
-            ),
-            const SizedBox(height: 16),
-            _buildSection(
-              icon: Icons.apartment,
-              title: "Flat/Rooms",
-              subtitle: "“Affordable Flats & Rooms”",
-              description:
-                  "Browse and find the perfect flats or rooms for rent in your area.",
             ),
             const SizedBox(height: 16),
             _buildSection(

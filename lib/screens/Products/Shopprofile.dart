@@ -116,6 +116,8 @@ class ShopProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
 
+
+
     // Fetch the shopid from the shopData and print it
     final String shopId = shopData['shopid'] ?? '';
     print('Shop ID: $shopId'); // Debugging: Print the shop ID

@@ -8,17 +8,26 @@ class HowToUsePage extends StatefulWidget {
 }
 
 class _HowToUsePageState extends State<HowToUsePage> {
-  late Future<Map<String, String>> _videoLinks;
+  late Future<Map<String, Map<String, String>>> _videoLinks;
 
-  Future<Map<String, String>> _fetchVideoLinks() async {
+  Future<Map<String, Map<String, String>>> _fetchVideoLinks() async {
     try {
       final doc = await FirebaseFirestore.instance.collection('video').doc('videos').get();
       final data = doc.data() as Map<String, dynamic>?;
-      return {
-        'video1': data?['video1'] ?? '',
-        'video2': data?['video2'] ?? '',
-        'video3': data?['video3'] ?? '',
-      };
+      Map<String, Map<String, String>> videoData = {};
+
+      for (int i = 1; i <= 10; i++) {
+        final videoKey = 'video$i';
+        final titleKey = 'title$i';
+        if (data?[videoKey] != null && data?[titleKey] != null) {
+          videoData[videoKey] = {
+            'url': data![videoKey] as String,
+            'title': data[titleKey] as String,
+          };
+        }
+      }
+
+      return videoData;
     } catch (e) {
       print('Error fetching video links: $e');
       return {};
@@ -79,7 +88,7 @@ class _HowToUsePageState extends State<HowToUsePage> {
           ),
         ),
       ),
-      body: FutureBuilder<Map<String, String>>(
+      body: FutureBuilder<Map<String, Map<String, String>>>(
         future: _videoLinks,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -90,45 +99,45 @@ class _HowToUsePageState extends State<HowToUsePage> {
           }
 
           final videoLinks = snapshot.data!;
-          return ListView(
-            children: [
-              if (videoLinks['video1']?.isNotEmpty == true)
-                YoutubePlayer(
-                  controller: YoutubePlayerController(
-                    initialVideoId: YoutubePlayer.convertUrlToId(videoLinks['video1']!)!,
-                    flags: YoutubePlayerFlags(
-                      autoPlay: false, // Video starts paused
-                      mute: false,
-                      controlsVisibleAtStart: true, // Show controls from the start
+          return ListView.builder(
+            itemCount: videoLinks.length,
+            itemBuilder: (context, index) {
+              final videoKey = videoLinks.keys.elementAt(index);
+              final videoData = videoLinks[videoKey]!;
+              final videoUrl = videoData['url']!;
+              final videoTitle = videoData['title']!;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      videoTitle,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                  showVideoProgressIndicator: true,
-                ),
-              if (videoLinks['video2']?.isNotEmpty == true)
-                YoutubePlayer(
-                  controller: YoutubePlayerController(
-                    initialVideoId: YoutubePlayer.convertUrlToId(videoLinks['video2']!)!,
-                    flags: YoutubePlayerFlags(
-                      autoPlay: false, // Video starts paused
-                      mute: false,
-                      controlsVisibleAtStart: true, // Show controls from the start
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: YoutubePlayer(
+                      controller: YoutubePlayerController(
+                        initialVideoId: YoutubePlayer.convertUrlToId(videoUrl)!,
+                        flags: YoutubePlayerFlags(
+                          autoPlay: false, // Video starts paused
+                          mute: false,
+                          controlsVisibleAtStart: true, // Show controls from the start
+                        ),
+                      ),
+                      showVideoProgressIndicator: true,
                     ),
                   ),
-                  showVideoProgressIndicator: true,
-                ),
-              if (videoLinks['video3']?.isNotEmpty == true)
-                YoutubePlayer(
-                  controller: YoutubePlayerController(
-                    initialVideoId: YoutubePlayer.convertUrlToId(videoLinks['video3']!)!,
-                    flags: YoutubePlayerFlags(
-                      autoPlay: false, // Video starts paused
-                      mute: false,
-                      controlsVisibleAtStart: true, // Show controls from the start
-                    ),
-                  ),
-                  showVideoProgressIndicator: true,
-                ),
-            ],
+                  SizedBox(height: 30),
+                ],
+              );
+            },
           );
         },
       ),

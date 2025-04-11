@@ -29,14 +29,15 @@ class _ShopEditPageState extends State<ShopEditPage> {
   List<String> categories = [];
   String? selectedCategory;
 
+  File? _selectedImage; // For shop image
+  File? productImage; // For product image
+
   @override
   void initState() {
     super.initState();
     _fetchShopDocument();
     _fetchCategories();
   }
-
-  File? _selectedImage;
 
   Future<void> _pickImage() async {
     final ImagePicker _picker = ImagePicker();
@@ -50,10 +51,45 @@ class _ShopEditPageState extends State<ShopEditPage> {
     }
   }
 
+  Future<void> _pickProductImage() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        productImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<String> _uploadProductImage(File imageFile) async {
+    if (imageFile == null) {
+      throw 'No image selected';
+    }
+
+    Reference storageReference = FirebaseStorage.instance.ref().child(
+        'product_images/${widget.shopId}/${DateTime.now().millisecondsSinceEpoch}');
+    UploadTask uploadTask = storageReference.putFile(imageFile);
+    TaskSnapshot taskSnapshot = await uploadTask;
+
+    return await taskSnapshot.ref.getDownloadURL();
+  }
+
   Future<void> _uploadImageAndUpdateUrl() async {
-    if (_selectedImage == null) return;
+    if (_selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Please select an image")),
+      );
+      return;
+    }
 
     try {
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Uploading image...")),
+      );
+
       // Upload the image to Firebase Storage
       Reference storageReference = FirebaseStorage.instance.ref().child(
           'shop_images/${widget.shopId}/${DateTime.now().millisecondsSinceEpoch}');
@@ -71,11 +107,15 @@ class _ShopEditPageState extends State<ShopEditPage> {
         'image_url': imageUrl,
       });
 
-      print("Image uploaded and URL updated successfully!");
+      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Image updated successfully")),
       );
     } catch (e) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error uploading image: $e")),
+      );
       print("Error uploading image: $e");
     }
   }
@@ -147,190 +187,308 @@ class _ShopEditPageState extends State<ShopEditPage> {
   }
 
   void _deleteProduct(String productId) async {
-  // Show a confirmation dialog
-  bool? confirmDelete = await showDialog<bool>(
+    // Show a confirmation dialog
+    bool? confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete this product?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context)
+                  .pop(false), // Return false if cancel is pressed
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context)
+                  .pop(true), // Return true if delete is pressed
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    // Check if the user confirmed the deletion
+    if (confirmDelete == true) {
+      await FirebaseFirestore.instance
+          .collection('products')
+          .doc(productId)
+          .delete();
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Product deleted")));
+    }
+  }
+
+void _editProduct(String productId, Map<String, dynamic> productData) {
+  TextEditingController nameController =
+      TextEditingController(text: productData['name']);
+  TextEditingController descController =
+      TextEditingController(text: productData['description']);
+  TextEditingController priceController =
+      TextEditingController(text: productData['price']?.toString() ?? '');
+  TextEditingController discountedPriceController = TextEditingController(
+      text: productData['discountedprice']?.toString() ?? '');
+  String? selectedCategory = productData['category'];
+  File? localProductImage; // Local variable to hold the selected product image
+  String? currentImageUrl = productData['image_url']; // Current image URL from Firestore
+  bool isSaving = false; // Flag to track if the save operation is in progress
+
+  showDialog(
     context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Confirm Deletion'),
-        content: Text('Are you sure you want to delete this product?'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false), // Return false if cancel is pressed
-            child: Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true), // Return true if delete is pressed
-            child: Text('Delete'),
-          ),
-        ],
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: Text("Edit Product"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildTextField("Product Name", nameController),
+                _buildTextField("Description", descController),
+                _buildTextField("Price", priceController, isNumeric: true),
+                _buildTextField("Discounted Price", discountedPriceController,
+                    isNumeric: true),
+                DropdownButton<String>(
+                  value: selectedCategory,
+                  hint: Text("Select Category"),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedCategory = newValue;
+                    });
+                  },
+                  items: categories.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+                // Display current image or a placeholder
+                currentImageUrl != null && currentImageUrl.isNotEmpty
+                    ? Image.network(
+                        currentImageUrl,
+                        width: 100,
+                        height: 100,
+                        fit: BoxFit.cover,
+                      )
+                    : Icon(Icons.image, size: 100),
+                ElevatedButton(
+                  onPressed: () async {
+                    final ImagePicker _picker = ImagePicker();
+                    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+                    if (pickedFile != null) {
+                      setState(() {
+                        localProductImage = File(pickedFile.path);
+                      });
+                    }
+                  },
+                  child: Text("Change Image"),
+                ),
+                if (localProductImage != null)
+                  Image.file(localProductImage!, width: 100, height: 100, fit: BoxFit.cover),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: isSaving ? null : () async {
+                  setState(() {
+                    isSaving = true; // Set the flag to true to show the progress indicator
+                  });
+
+                  if (selectedCategory == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Please select a category")));
+                    setState(() {
+                      isSaving = false; // Reset the flag if validation fails
+                    });
+                    return;
+                  }
+
+                  String imageUrl = currentImageUrl ?? '';
+                  if (localProductImage != null) {
+                    try {
+                      imageUrl = await _uploadProductImage(localProductImage!);
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Error uploading image: $e")));
+                      setState(() {
+                        isSaving = false; // Reset the flag if upload fails
+                      });
+                      return;
+                    }
+                  }
+
+                  await FirebaseFirestore.instance
+                      .collection('products')
+                      .doc(productId)
+                      .update({
+                    'name': nameController.text,
+                    'description': descController.text,
+                    'image_url': imageUrl,
+                    'price': priceController.text.isNotEmpty
+                        ? int.tryParse(priceController.text)
+                        : null,
+                    'discountedprice': discountedPriceController.text.isNotEmpty
+                        ? int.tryParse(discountedPriceController.text)
+                        : null,
+                    'category': selectedCategory,
+                  });
+
+                  setState(() {
+                    isSaving = false; // Reset the flag after successful save
+                  });
+
+                  Navigator.pop(context);
+                },
+                child: isSaving ? CircularProgressIndicator() : Text("Save Changes"),
+              ),
+            ],
+          );
+        },
       );
     },
   );
-
-  // Check if the user confirmed the deletion
-  if (confirmDelete == true) {
-    await FirebaseFirestore.instance
-        .collection('products')
-        .doc(productId)
-        .delete();
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text("Product deleted")));
-  }
 }
 
-  void _editProduct(String productId, Map<String, dynamic> productData) {
-    TextEditingController nameController =
-        TextEditingController(text: productData['name']);
-    TextEditingController descController =
-        TextEditingController(text: productData['description']);
-    TextEditingController imageUrlController =
-        TextEditingController(text: productData['image_url']);
-    TextEditingController priceController =
-        TextEditingController(text: productData['price']?.toString() ?? '');
-    TextEditingController discountedPriceController = TextEditingController(
-        text: productData['discountedprice']?.toString() ?? '');
-    String? selectedCategory = productData['category'];
+  Future<void> _addProduct() async {
+  TextEditingController nameController = TextEditingController();
+  TextEditingController descController = TextEditingController();
+  TextEditingController priceController = TextEditingController();
+  TextEditingController discountedPriceController = TextEditingController();
+  String? selectedCategory;
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Edit Product"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildTextField("Product Name", nameController),
-              _buildTextField("Description", descController),
-              _buildTextField("Image URL", imageUrlController),
-              _buildTextField("Price", priceController, isNumeric: true),
-              _buildTextField("Discounted Price", discountedPriceController,
-                  isNumeric: true),
-              DropdownButton<String>(
-                value: selectedCategory,
-                hint: Text("Select Category"),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedCategory = newValue;
-                  });
-                },
-                items: categories.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
+  File? localProductImage; // Local variable to hold the selected product image
+  bool isSaving = false; // Flag to track if the save operation is in progress
+
+  await showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: Text("Add New Product"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildTextField("Product Name", nameController),
+                _buildTextField("Description", descController),
+                _buildTextField("Price", priceController, isNumeric: true),
+                _buildTextField("Discounted Price", discountedPriceController,
+                    isNumeric: true),
+                DropdownButton<String>(
+                  value: selectedCategory,
+                  hint: Text("Select Category"),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedCategory = newValue;
+                    });
+                  },
+                  items: categories.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final ImagePicker _picker = ImagePicker();
+                    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+                    if (pickedFile != null) {
+                      setState(() {
+                        localProductImage = File(pickedFile.path);
+                      });
+                    }
+                  },
+                  child: Text("Pick Product Image"),
+                ),
+                if (localProductImage != null)
+                  Image.file(localProductImage!, width: 100, height: 100, fit: BoxFit.cover),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text("Cancel"),
               ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await FirebaseFirestore.instance
-                    .collection('products')
-                    .doc(productId)
-                    .update({
-                  'name': nameController.text,
-                  'description': descController.text,
-                  'image_url': imageUrlController.text,
-                  'price': priceController.text.isNotEmpty
-                      ? int.tryParse(priceController.text)
-                      : null,
-                  'discountedprice': discountedPriceController.text.isNotEmpty
-                      ? int.tryParse(discountedPriceController.text)
-                      : null,
-                  'category': selectedCategory,
-                });
-                Navigator.pop(context);
-              },
-              child: Text("Save Changes"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _addProduct() {
-    TextEditingController nameController = TextEditingController();
-    TextEditingController descController = TextEditingController();
-    TextEditingController imageUrlController = TextEditingController();
-    TextEditingController priceController = TextEditingController();
-    TextEditingController discountedPriceController = TextEditingController();
-    String? selectedCategory;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("Add New Product"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildTextField("Product Name", nameController),
-              _buildTextField("Description", descController),
-              _buildTextField("Image URL", imageUrlController),
-              _buildTextField("Price", priceController, isNumeric: true),
-              _buildTextField("Discounted Price", discountedPriceController,
-                  isNumeric: true),
-              DropdownButton<String>(
-                value: selectedCategory,
-                hint: Text("Select Category"),
-                onChanged: (String? newValue) {
+              ElevatedButton(
+                onPressed: isSaving ? null : () async {
                   setState(() {
-                    selectedCategory = newValue;
+                    isSaving = true; // Set the flag to true to show the progress indicator
                   });
-                },
-                items: categories.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (selectedCategory == null) {
+
+                  if (selectedCategory == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Please select a category")));
+                    setState(() {
+                      isSaving = false; // Reset the flag if validation fails
+                    });
+                    return;
+                  }
+
+                  if (localProductImage == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Please select an image")));
+                    setState(() {
+                      isSaving = false; // Reset the flag if validation fails
+                    });
+                    return;
+                  }
+
+                  String imageUrl;
+                  try {
+                    imageUrl = await _uploadProductImage(localProductImage!);
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Error uploading image: $e")));
+                    setState(() {
+                      isSaving = false; // Reset the flag if upload fails
+                    });
+                    return;
+                  }
+
+                  await FirebaseFirestore.instance.collection('products').add({
+                    'shopid': widget.shopId,
+                    'name': nameController.text,
+                    'description': descController.text,
+                    'image_url': imageUrl,
+                    'price': priceController.text.isNotEmpty
+                        ? int.tryParse(priceController.text)
+                        : null,
+                    'discountedprice': discountedPriceController.text.isNotEmpty
+                        ? int.tryParse(discountedPriceController.text)
+                        : null,
+                    'city': shopDetails?['city'] ?? '',
+                    'display': true,
+                    'category': selectedCategory,
+                    'whatsappnumber': shopDetails?['whatsapp'] ?? '',
+                  });
+
+                  setState(() {
+                    isSaving = false; // Reset the flag after successful save
+                  });
+
+                  Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Please select a category")));
-                  return;
-                }
-                await FirebaseFirestore.instance.collection('products').add({
-                  'shopid': widget.shopId,
-                  'name': nameController.text,
-                  'description': descController.text,
-                  'image_url': imageUrlController.text,
-                  'price': priceController.text.isNotEmpty
-                      ? int.tryParse(priceController.text)
-                      : null,
-                  'discountedprice': discountedPriceController.text.isNotEmpty
-                      ? int.tryParse(discountedPriceController.text)
-                      : null,
-                  'city': shopDetails?['city'] ?? '',
-                  'display': true,
-                  'category': selectedCategory,
-                  'whatsappnumber': shopDetails?['whatsapp'] ?? '',
-                });
-                Navigator.pop(context);
-              },
-              child: Text("Add Product"),
-            ),
-          ],
-        );
-      },
-    );
-  }
+                      SnackBar(content: Text("Product added successfully")));
+                },
+                child: isSaving ? CircularProgressIndicator() : Text("Add Product"),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
 
   @override
   @override
@@ -463,8 +621,7 @@ class _ShopEditPageState extends State<ShopEditPage> {
                               onPressed: _addProduct,
                             ),
                             Text("Add new",
-                            
-                             style: TextStyle(color: Colors.blue) )
+                                style: TextStyle(color: Colors.blue))
                           ],
                         ),
                       ),
@@ -537,7 +694,7 @@ class _ShopEditPageState extends State<ShopEditPage> {
                           child: Image.network(
                             product['image_url'],
                             width: 60,
-                            height:60,
+                            height: 60,
                             fit: BoxFit.cover,
                           ),
                         )

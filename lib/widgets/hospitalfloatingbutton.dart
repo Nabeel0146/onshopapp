@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class AddNewHospitalPage extends StatefulWidget {
   final List<String> cities;
@@ -21,18 +24,35 @@ class _AddNewHospitalPageState extends State<AddNewHospitalPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _mobileController = TextEditingController();
   final TextEditingController _whatsappController = TextEditingController();
-  final TextEditingController _imageUrlController = TextEditingController();
   String? _selectedCity;
+  String? _imageUrl;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      // Upload image to Firebase Storage
+      final storageRef = FirebaseStorage.instance.ref().child('images/${pickedFile.name}');
+      final uploadTask = storageRef.putFile(File(pickedFile.path));
+      final snapshot = await uploadTask.whenComplete(() {});
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+
+      setState(() {
+        _imageUrl = downloadUrl;
+      });
+    }
+  }
 
   Future<void> _addNewHospital() async {
     final name = _nameController.text;
     final description = _descriptionController.text;
     final mobile = _mobileController.text;
     final whatsapp = _whatsappController.text;
-    final imageUrl = _imageUrlController.text;
+    final imageUrl = _imageUrl;
     final city = _selectedCity;
 
-    if (name.isEmpty || description.isEmpty || mobile.isEmpty || city == null) {
+    if (name.isEmpty || description.isEmpty || mobile.isEmpty || city == null || imageUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all the required fields')),
       );
@@ -48,7 +68,7 @@ class _AddNewHospitalPageState extends State<AddNewHospitalPage> {
         'image_url': imageUrl,
         'city': city,
         'subcategory': widget.subcategory,
-        'display': true,
+        'display': false, // Set display to false
         'associate': false,
         'lock': false,
         'customerid': '',
@@ -66,6 +86,13 @@ class _AddNewHospitalPageState extends State<AddNewHospitalPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    // Set the default selected city to the first item in the list
+    _selectedCity = widget.cities.isNotEmpty ? widget.cities.first : null;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -75,6 +102,18 @@ class _AddNewHospitalPageState extends State<AddNewHospitalPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            ElevatedButton(
+              onPressed: _pickImage,
+              child: const Text('Upload Image'),
+            ),
+            if (_imageUrl != null)
+              Image.network(
+                _imageUrl!,
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+              ),
+            const SizedBox(height: 20),
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Name'),
@@ -91,10 +130,6 @@ class _AddNewHospitalPageState extends State<AddNewHospitalPage> {
             TextFormField(
               controller: _whatsappController,
               decoration: const InputDecoration(labelText: 'WhatsApp'),
-            ),
-            TextFormField(
-              controller: _imageUrlController,
-              decoration: const InputDecoration(labelText: 'Image URL'),
             ),
             DropdownSearch<String>(
               items: widget.cities,

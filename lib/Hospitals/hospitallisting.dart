@@ -84,26 +84,28 @@ class _ListingPageState extends State<hosListingPage> {
   }
 
   Future<List<Map<String, dynamic>>> _fetchFilteredItems(
-      String subcategory, String? city) async {
-    try {
-      Query<Map<String, dynamic>> query = FirebaseFirestore.instance
-          .collection('hospitallisting')
-          .where('subcategory', isEqualTo: subcategory)
-          .where('display', isEqualTo: true);
+    String subcategory, String? city) async {
+  try {
+    Query<Map<String, dynamic>> query = FirebaseFirestore.instance
+        .collection('hospitallisting')
+        .where('subcategory', isEqualTo: subcategory)
+        .where('display', isEqualTo: true);
 
-      if (city != null) {
-        query = query.where('city', isEqualTo: city);
-      }
-
-      final querySnapshot = await query.get();
-      return querySnapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
-    } catch (e) {
-      print('Error fetching items: $e');
-      return [];
+    if (city != null && city != 'All City') {
+      query = query.where('city', isEqualTo: city);
     }
+
+    final querySnapshot = await query.get();
+    return querySnapshot.docs.map((doc) {
+      final data = doc.data();
+      data['documentId'] = doc.id; // Add the Firestore doc ID here
+      return data;
+    }).toList();
+  } catch (e) {
+    print('Error fetching items: $e');
+    return [];
   }
+}
 
   Future<void> _checkCustomerID(Map<String, dynamic> item) async {
     if (item['associate'] == true) {
@@ -264,69 +266,69 @@ class _ListingPageState extends State<hosListingPage> {
                   ),
                 ),
                 if (cities.isNotEmpty)
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        color: Colors.black,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 1),
-                      SizedBox(
-                        width: 150, // Adjust width as needed
-                        child: DropdownSearch<String>(
-                          items: cities..sort(), // Sort cities alphabetically
-                          selectedItem: selectedCity,
-                          popupProps: PopupProps.menu(
-                            showSearchBox: true, // Enable search functionality
-                            searchFieldProps: TextFieldProps(
-                              decoration: InputDecoration(
-                                hintText: "Search city...",
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                          ),
-                          dropdownButtonProps: const DropdownButtonProps(
-                            icon: Icon(Icons.arrow_drop_down, color: Colors.black),
-                          ),
-                          dropdownDecoratorProps: DropDownDecoratorProps(
-                            baseStyle: TextStyle(color: Colors.black),
-                            dropdownSearchDecoration: InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(8)),
-                                borderSide: BorderSide.none,
-                              ),
-                              filled: true,
-                              fillColor: Colors.transparent,
-                            ),
-                          ),
-                          onChanged: (newValue) {
-                            setState(() {
-                              selectedCity = newValue;
-                            });
+  Row(
+    children: [
+      const Icon(
+        Icons.location_on,
+        color: Colors.black,
+        size: 16,
+      ),
+      const SizedBox(width: 1),
+      SizedBox(
+        width: 150, // Adjust width as needed
+        child: DropdownSearch<String>(
+          items: ['All City']..addAll(cities)..sort(), // Add 'All City' and sort
+          selectedItem: selectedCity,
+          popupProps: PopupProps.menu(
+            showSearchBox: true, // Enable search functionality
+            searchFieldProps: TextFieldProps(
+              decoration: InputDecoration(
+                hintText: "Search city...",
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          dropdownButtonProps: const DropdownButtonProps(
+            icon: Icon(Icons.arrow_drop_down, color: Colors.black),
+          ),
+          dropdownDecoratorProps: DropDownDecoratorProps(
+            baseStyle: TextStyle(color: Colors.black),
+            dropdownSearchDecoration: InputDecoration(
+              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
+                borderSide: BorderSide.none,
+              ),
+              filled: true,
+              fillColor: Colors.transparent,
+            ),
+          ),
+          onChanged: (newValue) {
+            setState(() {
+              selectedCity = newValue;
+            });
 
-                            if (newValue != null) {
-                              SharedPreferences.getInstance().then((prefs) {
-                                prefs.setString('selectedCity', newValue);
-                              });
-                            }
+            if (newValue != null) {
+              SharedPreferences.getInstance().then((prefs) {
+                prefs.setString('selectedCity', newValue);
+              });
+            }
 
-                            // Fetch offers for the new city
-                            setState(() {}); // Ensure this method is called to reload the page
-                          },
-                          // Ensure the selected city text is on a single line
-                          dropdownBuilder: (context, selectedItem) {
-                            return Text(
-                              selectedItem ?? 'Select City',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: Colors.black),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+            // Fetch offers for the new city
+            setState(() {}); // Ensure this method is called to reload the page
+          },
+          // Ensure the selected city text is on a single line
+          dropdownBuilder: (context, selectedItem) {
+            return Text(
+              selectedItem ?? 'Select City',
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Colors.black),
+            );
+          },
+        ),
+      ),
+    ],
+  ),
                 const SizedBox(width: 10),
               ],
             ),

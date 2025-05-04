@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -91,17 +93,16 @@ class _ListingPageState extends State<ListingPage> {
           .where('subcategory', isEqualTo: subcategory)
           .where('display', isEqualTo: true);
 
-      if (city != null) {
+      if (city != null && city != 'All City') {
         query = query.where('city', isEqualTo: city);
       }
 
       final querySnapshot = await query.get();
-    return querySnapshot.docs.map((doc) {
-  final data = doc.data();
-  data['documentId'] = doc.id; // 👈 Add the Firestore doc ID here
-  return data;
-}).toList();
-
+      return querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        data['documentId'] = doc.id; // Add the Firestore doc ID here
+        return data;
+      }).toList();
     } catch (e) {
       print('Error fetching items: $e');
       return [];
@@ -109,120 +110,147 @@ class _ListingPageState extends State<ListingPage> {
   }
 
   Future<void> _checkCustomerID(Map<String, dynamic> item) async {
-  if (item['associate'] == true) {
-    if (item['lock'] == true) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String? storedCustomerID = prefs.getString('customerID_${item['id']}');
+    if (item['associate'] == true) {
+      if (item['lock'] == true) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        Map<String, String> storedCustomerIDs = {};
 
-      if (storedCustomerID != null && storedCustomerID == item['customerid']) {
-        print('Navigating to ShopProfilePage with document ID: ${item['documentId']}');
+        // Safely parse stored customer IDs
+        final storedCustomerIDsString = prefs.getString('customerIDs');
+        if (storedCustomerIDsString != null &&
+            storedCustomerIDsString.isNotEmpty) {
+          storedCustomerIDs =
+              Map<String, String>.from(jsonDecode(storedCustomerIDsString));
+        }
 
-        // If the stored customerID matches, navigate directly to ShopProfilePage
+        // Check if the customer ID for the current shop is already stored
+        final shopId = item['shopid']; // Correct key name
+        print('Shop ID: $shopId'); // Debugging: Print the shop ID
+
+        if (shopId == null) {
+          // If shopId is null, show an error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Invalid shop data')),
+          );
+          return;
+        }
+
+        final storedCustomerID = storedCustomerIDs[shopId];
+
+        if (storedCustomerID != null &&
+            storedCustomerID == item['customerid']) {
+          print(
+              'Navigating to ShopProfilePage with document ID: ${item['documentId']}');
+
+          // If the stored customerID matches, navigate directly to ShopProfilePage
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ShopProfilePage(shopData: item),
+            ),
+          );
+        } else {
+          // If no stored customerID or it doesn't match, prompt the user to enter the shopID
+          String? customerID;
+          await showDialog<String>(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Column(
+                  children: [
+                    const Text('Enter Shop ID'),
+                    Text(
+                      "Enter the shop id to view Business Profile",
+                      style: TextStyle(fontSize: 14),
+                    )
+                  ],
+                ),
+                content: TextField(
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: 'Shop ID',
+                    border: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Colors.black), // Black border
+                      borderRadius: BorderRadius.circular(8), // Rounded corners
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                          color: Colors.black), // Black border when focused
+                      borderRadius: BorderRadius.circular(8), // Rounded corners
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                          color: Colors.black), // Black border when enabled
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    customerID = value;
+                  },
+                ),
+                actions: <Widget>[
+                  Container(
+                    width: double.infinity,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context, customerID),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green, // Green background
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(8), // Rounded corners
+                        ),
+                      ),
+                      child: const Text(
+                        'Submit',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                      16), // Curved corners for the dialog
+                ),
+                backgroundColor:
+                    Colors.white, // White background for the dialog
+              );
+            },
+          );
+
+          if (customerID != null) {
+            // Check if the customerID matches the one in the item's document
+            if (item['customerid'] == customerID) {
+              // Store the customerID for future use
+              storedCustomerIDs[shopId] = customerID!;
+              await prefs.setString(
+                  'customerIDs', jsonEncode(storedCustomerIDs));
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ShopProfilePage(shopData: item),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Invalid Customer ID')),
+              );
+            }
+          }
+        }
+      } else {
+        // Directly navigate to ShopProfilePage if 'lock' is false
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ShopProfilePage(shopData: item),
           ),
         );
-      } else {
-        // If no stored customerID or it doesn't match, prompt the user to enter the shopID
-        String? customerID;
-        await showDialog<String>(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Column(
-                children: [
-                  const Text('Enter Shop ID'),
-                  Text(
-                    "Enter the shop id to view Business Profile",
-                    style: TextStyle(fontSize: 14),
-                  )
-                ],
-              ),
-              content: TextField(
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: 'Shop ID',
-                  border: OutlineInputBorder(
-                    borderSide:
-                        const BorderSide(color: Colors.black), // Black border
-                    borderRadius: BorderRadius.circular(8), // Rounded corners
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(
-                        color: Colors.black), // Black border when focused
-                    borderRadius: BorderRadius.circular(8), // Rounded corners
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(
-                        color: Colors.black), // Black border when enabled
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onChanged: (value) {
-                  customerID = value;
-                },
-              ),
-              actions: <Widget>[
-                Container(
-                  width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context, customerID),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green, // Green background
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(8), // Rounded corners
-                      ),
-                    ),
-                    child: const Text(
-                      'Submit',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-              shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(16), // Curved corners for the dialog
-              ),
-              backgroundColor: Colors.white, // White background for the dialog
-            );
-          },
-        );
-
-        if (customerID != null) {
-          // Check if the customerID matches the one in the item's document
-          if (item['customerid'] == customerID) {
-            // Store the customerID for future use
-            prefs.setString('customerID_${item['id']}', customerID!);
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ShopProfilePage(shopData: item),
-              ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Invalid Customer ID')),
-            );
-          }
-        }
       }
-    } else {
-      // Directly navigate to ShopProfilePage if 'lock' is false
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ShopProfilePage(shopData: item),
-        ),
-      );
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -269,69 +297,75 @@ class _ListingPageState extends State<ListingPage> {
                   ),
                 ),
                 if (cities.isNotEmpty)
-                 Row(
-  children: [
-    const Icon(
-      Icons.location_on,
-      color: Colors.black,
-      size: 16,
-    ),
-    const SizedBox(width: 1),
-    SizedBox(
-      width: 150, // Adjust width as needed
-      child: DropdownSearch<String>(
-        items: cities..sort(), // Sort cities alphabetically
-        selectedItem: selectedCity,
-        popupProps: PopupProps.menu(
-          showSearchBox: true, // Enable search functionality
-          searchFieldProps: TextFieldProps(
-            decoration: InputDecoration(
-              hintText: "Search city...",
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ),
-        dropdownButtonProps: const DropdownButtonProps(
-          icon: Icon(Icons.arrow_drop_down, color: Colors.black),
-        ),
-        dropdownDecoratorProps: DropDownDecoratorProps(
-          baseStyle: TextStyle(color: Colors.black),
-          dropdownSearchDecoration: InputDecoration(
-            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-              borderSide: BorderSide.none,
-            ),
-            filled: true,
-            fillColor: Colors.transparent,
-          ),
-        ),
-        onChanged: (newValue) {
-          setState(() {
-            selectedCity = newValue;
-          });
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on,
+                        color: Colors.black,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 1),
+                      SizedBox(
+                        width: 150, // Adjust width as needed
+                        child: DropdownSearch<String>(
+                          items: ['All City']
+                            ..addAll(cities)
+                            ..sort(), // Add 'All City' and sort
+                          selectedItem: selectedCity,
+                          popupProps: PopupProps.menu(
+                            showSearchBox: true, // Enable search functionality
+                            searchFieldProps: TextFieldProps(
+                              decoration: InputDecoration(
+                                hintText: "Search city...",
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          dropdownButtonProps: const DropdownButtonProps(
+                            icon: Icon(Icons.arrow_drop_down,
+                                color: Colors.black),
+                          ),
+                          dropdownDecoratorProps: DropDownDecoratorProps(
+                            baseStyle: TextStyle(color: Colors.black),
+                            dropdownSearchDecoration: InputDecoration(
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              border: OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8)),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.transparent,
+                            ),
+                          ),
+                          onChanged: (newValue) {
+                            setState(() {
+                              selectedCity = newValue;
+                            });
 
-          if (newValue != null) {
-            SharedPreferences.getInstance().then((prefs) {
-              prefs.setString('selectedCity', newValue);
-            });
-          }
+                            if (newValue != null) {
+                              SharedPreferences.getInstance().then((prefs) {
+                                prefs.setString('selectedCity', newValue);
+                              });
+                            }
 
-          // Fetch offers for the new city
-          setState(() {}); // Ensure this method is called to reload the page
-        },
-        // Ensure the selected city text is on a single line
-        dropdownBuilder: (context, selectedItem) {
-          return Text(
-            selectedItem ?? 'Select City',
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: Colors.black),
-          );
-        },
-      ),
-    ),
-  ],
-),
+                            // Fetch offers for the new city
+                            setState(
+                                () {}); // Ensure this method is called to reload the page
+                          },
+                          // Ensure the selected city text is on a single line
+                          dropdownBuilder: (context, selectedItem) {
+                            return Text(
+                              selectedItem ?? 'Select City',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: Colors.black),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 const SizedBox(width: 10),
               ],
             ),
@@ -366,7 +400,8 @@ class _ListingPageState extends State<ListingPage> {
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.only(top: 4,left: 4, right: 4, bottom: 60),
+                padding: const EdgeInsets.only(
+                    top: 4, left: 4, right: 4, bottom: 60),
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final item = items[index];
@@ -599,7 +634,6 @@ class _ListingPageState extends State<ListingPage> {
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold),
                                   ),
-
                                 ],
                               ),
                             ),

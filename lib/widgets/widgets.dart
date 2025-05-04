@@ -225,7 +225,7 @@ Widget buildSmallCategoryTile(BuildContext context, String title,
     String assetImagePath, String collectionName) {
   return GestureDetector(
     onTap: () {
-      if (title == 'Jobs') {
+      if (title == 'Job Vacancy') {
         // Navigate to the JobsListingPage when "Jobs" is clicked
         Navigator.push(
           context,
@@ -274,9 +274,19 @@ Widget buildSmallCategoryTile(BuildContext context, String title,
             width: 30,
           ),
           SizedBox(height: 5),
-          Text(
-            title,
-            style: TextStyle(color: Colors.black87, fontSize: 12),
+          Padding(
+            padding: const EdgeInsets.only(right:3, left: 3),
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
+            ),
           ),
         ],
       ),

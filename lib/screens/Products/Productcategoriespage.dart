@@ -11,7 +11,7 @@ class ProductCategoriesPage extends StatelessWidget {
       final querySnapshot = await FirebaseFirestore.instance.collection('shoppagebanners').doc('banner').get();
       final data = querySnapshot.data();
       List<String> bannerUrls = [];
-      for (int i = 1; i <= 10; i++) {
+      for (int i = 1; i <= 30; i++) {
         final key = 'ad$i';
         if (data != null && data.containsKey(key) && data[key] is String) {
           bannerUrls.add(data[key] as String);
@@ -88,7 +88,7 @@ class ProductCategoriesPage extends StatelessWidget {
               children: [
                 // Carousel of banners
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.only(left:16.0, right: 16, top: 16),
                   child: bannerUrls.isNotEmpty
                       ? CarouselSlider(
                           items: bannerUrls.map((url) {
@@ -123,7 +123,7 @@ class ProductCategoriesPage extends StatelessWidget {
                             );
                           }).toList(),
                           options: CarouselOptions(
-                            height: 380,
+                            height: 340,
                             enlargeCenterPage: true,
                             autoPlay: true,
                             aspectRatio: 16 / 9,

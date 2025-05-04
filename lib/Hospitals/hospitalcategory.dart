@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:onshopapp/Hospitals/hospitallisting.dart';
-import 'package:shimmer/shimmer.dart';
 
+import 'package:shimmer/shimmer.dart';
 
 class HospitalsPage extends StatelessWidget {
   final String collectionName = "hospitalcategories";
@@ -27,10 +27,10 @@ class HospitalsPage extends StatelessWidget {
 
   Future<List<String>> _fetchBannerImageUrls() async {
     try {
-      final querySnapshot = await FirebaseFirestore.instance.collection('shoppagebanners').doc('banner').get();
+      final querySnapshot = await FirebaseFirestore.instance.collection('hospitalbanners').doc('banners').get();
       final data = querySnapshot.data();
       List<String> bannerUrls = [];
-      for (int i = 1; i <= 10; i++) {
+      for (int i = 1; i <= 30; i++) {
         final key = 'ad$i';
         if (data != null && data.containsKey(key) && data[key] is String) {
           bannerUrls.add(data[key] as String);
@@ -48,7 +48,6 @@ class HospitalsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-
         backgroundColor: Colors.transparent, // Transparent to allow gradient
         toolbarHeight: 70,
         elevation: 0, // Remove shadow if not needed
@@ -115,8 +114,7 @@ class HospitalsPage extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10),
                               child: CachedNetworkImage(
                                 imageUrl: url,
-                                fit: BoxFit
-                                    .contain, // Ensure the image fits within the container without being cut off
+                                fit: BoxFit.contain,
                                 placeholder: (context, url) =>
                                     Shimmer.fromColors(
                                   baseColor: Colors.grey[300]!,
@@ -188,7 +186,7 @@ class HospitalsPage extends StatelessWidget {
                           crossAxisCount: 4,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
-                          childAspectRatio: 1, // Adjusted for images
+                          childAspectRatio: 1,
                         ),
                         itemCount: subcategories.length,
                         itemBuilder: (context, index) {
@@ -199,8 +197,8 @@ class HospitalsPage extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => hosListingPage(
-                                    subcategory: subcategory['name'],
+                                  builder: (context) => hosListingPage(subcategory: subcategory['name'],
+
                                   ),
                                 ),
                               );
@@ -241,7 +239,7 @@ class HospitalsPage extends StatelessWidget {
                                   const SizedBox(height: 6),
                                   // Text with fixed height to ensure uniform alignment
                                   Container(
-                                    height: 36, // Adjust height as per your design
+                                    height: 36,
                                     alignment: Alignment.center,
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 8.0),

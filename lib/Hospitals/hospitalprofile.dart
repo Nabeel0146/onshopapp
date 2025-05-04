@@ -1,20 +1,18 @@
-import 'package:flutter/material.dart';
+import 'dart:ui';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 import 'package:onshopapp/Hospitals/edithospital.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HospitalProfilePage extends StatelessWidget {
   final Map<String, dynamic> hospitalData;
-  final Map<String, dynamic> shopData; // Optional parameter with default value
 
-  const HospitalProfilePage({
-    required this.hospitalData,
-    Key? key,
-    this.shopData = const {}, // Default value is an empty map
-  }) : super(key: key);
+  const HospitalProfilePage({required this.hospitalData, Key? key}) : super(key: key);
 
   void makeCall(String phoneNumber) async {
     final uri = Uri(scheme: 'tel', path: phoneNumber);
@@ -38,10 +36,9 @@ class HospitalProfilePage extends StatelessWidget {
     }
   }
 
-  void shareDetails(
-      String title, String description, String phoneNumber) async {
+  void shareDetails(String title, String description, String phoneNumber) async {
     final footer =
-        '\n\nShared from Onshop App\n\nDownload Onshop App now\nGoogle Playstore: https://play.google.com/store/apps/details?id=com.onshopin.onshopapp&pcampaignid=web_share    \nApp Store: https://apps.apple.com/in/app/on-shop/id6740747263    ';
+        '\n\nShared from Onshop App\n\nDownload Onshop App now\nGoogle Playstore: https://play.google.com/store/apps/details?id=com.onshopin.onshopapp&pcampaignid=web_share\nApp Store: https://apps.apple.com/in/app/on-shop/id6740747263';
     final shareContent = '''
   $title
 
@@ -52,8 +49,7 @@ class HospitalProfilePage extends StatelessWidget {
   ''';
 
     try {
-      await Share.share(shareContent,
-          subject: 'Check out this hospital on Onshop!');
+      await Share.share(shareContent, subject: 'Check out this hospital on Onshop!');
       print('Sharing successful');
     } catch (e) {
       print('Error while sharing: $e');
@@ -83,10 +79,7 @@ class HospitalProfilePage extends StatelessWidget {
         return 'No address provided';
       }
 
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
       if (!userDoc.exists) {
         return 'No address provided';
       }
@@ -131,8 +124,7 @@ class HospitalProfilePage extends StatelessWidget {
                     children: [
                       const SizedBox(width: 45),
                       ClipRRect(
-                        child: Image.asset("asset/onshopnewcurvedlogo.png",
-                            width: 50),
+                        child: Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -166,16 +158,7 @@ class HospitalProfilePage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            CachedNetworkImage(
-              imageUrl: hospitalData['image_url'] ?? '',
-              width: double.infinity,
-              height: 300,
-              fit: BoxFit.cover,
-              placeholder: (context, url) =>
-                  const Center(child: CircularProgressIndicator()),
-              errorWidget: (context, url, error) =>
-                  const Icon(Icons.error, color: Colors.red),
-            ),
+            _buildImageCarousel(),
             Container(
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -197,8 +180,7 @@ class HospitalProfilePage extends StatelessWidget {
                 children: [
                   Text(
                     hospitalData['name'] ?? 'No Name',
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -278,8 +260,7 @@ class HospitalProfilePage extends StatelessWidget {
                       return GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 1,
                           childAspectRatio: 0.9, // Square shape
                           crossAxisSpacing: 10,
@@ -287,31 +268,25 @@ class HospitalProfilePage extends StatelessWidget {
                         ),
                         itemCount: doctors.length,
                         itemBuilder: (context, index) {
-                          var doctor =
-                              doctors[index].data() as Map<String, dynamic>;
+                          var doctor = doctors[index].data() as Map<String, dynamic>;
                           String doctorId = doctors[index].id;
-
                           return Container(
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.grey, width: 1),
                               borderRadius: BorderRadius.circular(10),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.grey.withOpacity(
-                                      0.1), // Shadow color with opacity
+                                  color: Colors.grey.withOpacity(0.1), // Shadow color with opacity
                                   spreadRadius: 1, // Spread radius
                                   blurRadius: 2, // Blur radius
-                                  offset: const Offset(
-                                      0, 1), // Offset in the x and y directions
+                                  offset: const Offset(0, 1), // Offset in the x and y directions
                                 ),
                               ],
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.all(
-                                  8.0), // Add padding inside the border
+                              padding: const EdgeInsets.all(8.0), // Add padding inside the border
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment
-                                    .start, // Align children to the start (left)
+                                crossAxisAlignment: CrossAxisAlignment.start, // Align children to the start (left)
                                 children: [
                                   Expanded(
                                     child: Center(
@@ -319,20 +294,14 @@ class HospitalProfilePage extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(10),
                                         child: CachedNetworkImage(
                                           imageUrl: doctor['image_url'] ?? '',
-                                          placeholder: (context, url) =>
-                                              Container(
-                                            color: Colors
-                                                .grey, // Grey rectangle placeholder
+                                          placeholder: (context, url) => Container(
+                                            color: Colors.grey, // Grey rectangle placeholder
                                           ),
-                                          errorWidget: (context, url, error) =>
-                                              Container(
-                                            color: Colors
-                                                .grey, // Grey rectangle for error
+                                          errorWidget: (context, url, error) => Container(
+                                            color: Colors.grey, // Grey rectangle for error
                                           ),
-                                          fit: BoxFit
-                                              .fill, // Ensure the image fills the square container
-                                          alignment: Alignment
-                                              .center, // Center the image
+                                          fit: BoxFit.fill, // Ensure the image fills the square container
+                                          alignment: Alignment.center, // Center the image
                                         ),
                                       ),
                                     ),
@@ -340,26 +309,20 @@ class HospitalProfilePage extends StatelessWidget {
                                   const SizedBox(height: 8),
                                   Container(
                                     width: double.infinity, // Full width
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0, vertical: 4.0),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                          color: Colors.grey, width: 1),
+                                      border: Border.all(color: Colors.grey, width: 1),
                                     ),
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
                                             Expanded(
                                               child: Text(
                                                 doctor['name'] ?? 'No Name',
-                                                style: const TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight:
-                                                        FontWeight.bold),
+                                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                               ),
                                             ),
                                           ],
@@ -369,10 +332,8 @@ class HospitalProfilePage extends StatelessWidget {
                                           children: [
                                             Expanded(
                                               child: Text(
-                                                doctor['description'] ??
-                                                    'No Description',
-                                                style: const TextStyle(
-                                                    fontSize: 14),
+                                                doctor['description'] ?? 'No Description',
+                                                style: const TextStyle(fontSize: 14),
                                               ),
                                             ),
                                           ],
@@ -383,33 +344,27 @@ class HospitalProfilePage extends StatelessWidget {
                                   const SizedBox(height: 4),
                                   Container(
                                     width: double.infinity, // Full width
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0, vertical: 4.0),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                          color: Colors.grey, width: 1),
+                                      border: Border.all(color: Colors.grey, width: 1),
                                     ),
                                     child: Text(
                                       'Timing: ${doctor['timing'] ?? 'Not specified'}',
-                                      style: const TextStyle(
-                                          fontSize: 16, color: Colors.black),
+                                      style: const TextStyle(fontSize: 16, color: Colors.black),
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Container(
                                     width: double.infinity, // Full width
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0, vertical: 4.0),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                          color: Colors.grey, width: 1),
+                                      border: Border.all(color: Colors.grey, width: 1),
                                     ),
                                     child: Text(
                                       'Days: ${doctor['days'] ?? 'Not specified'}',
-                                      style: const TextStyle(
-                                          fontSize: 16, color: Colors.black),
+                                      style: const TextStyle(fontSize: 16, color: Colors.black),
                                     ),
                                   ),
                                 ],
@@ -436,9 +391,50 @@ class HospitalProfilePage extends StatelessWidget {
     );
   }
 
+  Widget _buildImageCarousel() {
+    List<String> imageUrls = [
+      hospitalData['image_url'] ?? '',
+      hospitalData['image1'] ?? '',
+      hospitalData['image2'] ?? '',
+      hospitalData['image3'] ?? '',
+      hospitalData['image4'] ?? '',
+      hospitalData['image5'] ?? '',
+    ];
+
+    // Filter out empty strings
+    imageUrls = imageUrls.where((url) => url.isNotEmpty).toList();
+
+    if (imageUrls.isEmpty) {
+      return const Center(
+        child: Text('No images available'),
+      );
+    }
+
+    return CarouselSlider.builder(
+      itemCount: imageUrls.length,
+      itemBuilder: (context, index, realIndex) {
+        return CachedNetworkImage(
+          imageUrl: imageUrls[index],
+          width: double.infinity,
+          height: 300, // Image height same as screen width
+          fit: BoxFit.cover,
+          placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+          errorWidget: (context, url, error) => const Icon(Icons.error, color: Colors.red),
+        );
+      },
+      options: CarouselOptions(
+        height: 300,
+        autoPlay: true,
+        enlargeCenterPage: true,
+        viewportFraction: 1.0,
+        aspectRatio: 2.0,
+        initialPage: 0,
+      ),
+    );
+  }
+
   void _showHospitalIdDialog(BuildContext context, String hospitalId) {
     final TextEditingController _hospitalIdController = TextEditingController();
-
     showDialog<String>(
       context: context,
       builder: (BuildContext context) {
@@ -543,8 +539,7 @@ class HospitalProfilePage extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               text,
-              style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
+              style: TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
             ),
           ],
         ),

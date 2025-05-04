@@ -1,3 +1,4 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -112,252 +113,285 @@ class ShopProfilePage extends StatelessWidget {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
+@override
+Widget build(BuildContext context) {
+  final double screenWidth = MediaQuery.of(context).size.width;
 
+  // Fetch the shopid from the shopData and print it
+  final String shopId = shopData['shopid'] ?? '';
+  print('Shop ID: $shopId'); // Debugging: Print the shop ID
 
-
-    // Fetch the shopid from the shopData and print it
-    final String shopId = shopData['shopid'] ?? '';
-    print('Shop ID: $shopId'); // Debugging: Print the shop ID
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent, // Transparent to allow gradient
-        toolbarHeight: 70,
-        elevation: 0, // Remove shadow if not needed
-        flexibleSpace: Column(
-          children: [
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color.fromARGB(255, 255, 185, 41), // Yellow at the top
-                      Colors.white, // White at the bottom
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 45),
-                      ClipRRect(
-                        child: Image.asset("asset/onshopnewcurvedlogo.png",
-                            width: 50),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'On Shop',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              height: 4,
-              color: const Color.fromARGB(255, 164, 164, 164),
-            ),
-          ],
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Full-screen shop image
-            CachedNetworkImage(
-              imageUrl: shopData['image_url'] ?? '',
-              width: double.infinity,
-              height: 300, // Image height same as screen width
-              fit: BoxFit.cover,
-              placeholder: (context, url) =>
-                  const Center(child: CircularProgressIndicator()),
-              errorWidget: (context, url, error) =>
-                  const Icon(Icons.error, color: Colors.red),
-            ),
-
-            // Content with Overlapping Effect
-            Container(
+  return Scaffold(
+    backgroundColor: Colors.white,
+    appBar: AppBar(
+      backgroundColor: Colors.transparent, // Transparent to allow gradient
+      toolbarHeight: 70,
+      elevation: 0, // Remove shadow if not needed
+      flexibleSpace: Column(
+        children: [
+          Expanded(
+            child: Container(
               decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+                gradient: LinearGradient(
+                  colors: [
+                    Color.fromARGB(255, 255, 185, 41), // Yellow at the top
+                    Colors.white, // White at the bottom
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black12, blurRadius: 8, spreadRadius: 2)
-                ],
               ),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Shop Name
-                  Text(
-                    shopData['name'] ?? 'No Name',
-                    style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Shop Description
-                  Text(
-                    shopData['description'] ?? 'No Description',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Action Buttons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildButton(
-                        imagePath: "asset/phone-call.png",
-                        text: 'Call',
-                        color: Colors.blue,
-                        onPressed: () {
-                          makeCall(shopData['phone'] ??
-                              ''); // Replace with the actual phone number
-                        },
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 45),
+                    ClipRRect(
+                      child: Image.asset("asset/onshopnewcurvedlogo.png",
+                          width: 50),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'On Shop',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
-                      _buildButton(
-                        imagePath: "asset/whatsapp2.png",
-                        text: 'Chat',
-                        color: Colors.green,
-                        onPressed: () {
-                          openWhatsAppChat(shopData['whatsapp'] ??
-                              ''); // Replace with the actual WhatsApp number
-                        },
-                      ),
-                      _buildButton(
-                        imagePath: "asset/share2.png",
-                        text: 'Share',
-                        color: Colors.amber,
-                        onPressed: () {
-                          shareDetails(
-                            shopData['name'] ??
-                                'No Name', // Replace with actual title
-                            shopData['description'] ??
-                                'No Description', // Replace with actual description
-                            shopData['phone'] ??
-                                '', // Replace with actual phone number
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 3),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Container(
+            height: 4,
+            color: const Color.fromARGB(255, 164, 164, 164),
+          ),
+        ],
+      ),
+    ),
+    body: SingleChildScrollView(
+      child: Column(
+        children: [
+          // Carousel Slider for Shop Images
+          _buildImageCarousel(),
 
-                  // Get Direction Button
-                  Container(
-                    width: double.infinity,
-                    child: _buildButton(
-                      imagePath: "asset/google-maps2.png",
-                      text: 'Get Direction',
-                      color: Colors.black,
-                      backgroundColor: Colors.white,
-                      borderColor: Colors.black,
+          // Content with Overlapping Effect
+          Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black12, blurRadius: 8, spreadRadius: 2)
+              ],
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Shop Name
+                Text(
+                  shopData['name'] ?? 'No Name',
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+
+                // Shop Description
+                Text(
+                  shopData['description'] ?? 'No Description',
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 16),
+
+                // Action Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildButton(
+                      imagePath: "asset/phone-call.png",
+                      text: 'Call',
+                      color: Colors.blue,
                       onPressed: () {
-                        openMapLink(context, shopData['maplink'] ?? ''); // Replace with the actual map link
+                        makeCall(shopData['phone'] ??
+                            ''); // Replace with the actual phone number
                       },
                     ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Products Section
-                  Center(
-                    child: const Text(
-                      'Products',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                    _buildButton(
+                      imagePath: "asset/whatsapp2.png",
+                      text: 'Chat',
+                      color: Colors.green,
+                      onPressed: () {
+                        openWhatsAppChat(shopData['whatsapp'] ??
+                            ''); // Replace with the actual WhatsApp number
+                      },
                     ),
-                  ),
-                  const Divider(
-                    thickness: .5,
-                    color: Colors.grey,
-                  ),
-                  const SizedBox(height: 16),
+                    _buildButton(
+                      imagePath: "asset/share2.png",
+                      text: 'Share',
+                      color: Colors.amber,
+                      onPressed: () {
+                        shareDetails(
+                          shopData['name'] ??
+                              'No Name', // Replace with actual title
+                          shopData['description'] ??
+                              'No Description', // Replace with actual description
+                          shopData['phone'] ??
+                              '', // Replace with actual phone number
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
 
-                  // Fetch and display products from Firestore
-                  StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('products')
-                        .where('shopid', isEqualTo: shopId)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return const Center(
-                            child: Text('No products available'));
-                      }
-
-                      return GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2, // Keeps 2 items per row
-                          crossAxisSpacing: 12, // Increases horizontal spacing
-                          mainAxisSpacing: 12, // Increases vertical spacing
-                          childAspectRatio:
-                              0.50, // Decrease this value to make items taller
-                        ),
-                        itemCount: snapshot.data!.docs.length,
-                        itemBuilder: (context, index) {
-                          final product = snapshot.data!.docs[index].data()
-                              as Map<String, dynamic>;
-                          return _buildProductCard(
-                            product['name'] ?? 'No Name',
-                            product['price'] ?? 0,
-                            product['discountedprice'] ?? 0,
-                            product['image_url'] ??
-                                'https://via.placeholder.com/150',
-                            shopData['whatsapp'] ?? '',
-                            product['description'] ??
-                                'No Description', // Pass the description field
-                          );
-                        },
-                      );
+                // Get Direction Button
+                Container(
+                  width: double.infinity,
+                  child: _buildButton(
+                    imagePath: "asset/google-maps2.png",
+                    text: 'Get Direction',
+                    color: Colors.black,
+                    backgroundColor: Colors.white,
+                    borderColor: Colors.black,
+                    onPressed: () {
+                      openMapLink(context, shopData['maplink'] ?? ''); // Replace with the actual map link
                     },
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 20),
+
+                // Products Section
+                Center(
+                  child: const Text(
+                    'Products',
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                const Divider(
+                  thickness: .5,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 16),
+
+                // Fetch and display products from Firestore
+                StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('products')
+                      .where('shopid', isEqualTo: shopId)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(
+                          child: Text('No products available'));
+                    }
+
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2, // Keeps 2 items per row
+                        crossAxisSpacing: 12, // Increases horizontal spacing
+                        mainAxisSpacing: 12, // Increases vertical spacing
+                        childAspectRatio:
+                            0.50, // Decrease this value to make items taller
+                      ),
+                      itemCount: snapshot.data!.docs.length,
+                      itemBuilder: (context, index) {
+                        final product = snapshot.data!.docs[index].data()
+                            as Map<String, dynamic>;
+                        return _buildProductCard(
+                          product['name'] ?? 'No Name',
+                          product['price'] ?? 0,
+                          product['discountedprice'] ?? 0,
+                          product['image_url'] ??
+                              '<url id="d074bo85jtds76q5dtt0" type="url" status="failed" title="" wc="0">https://via.placeholder.com/150</url> ',
+                          shopData['whatsapp'] ?? '',
+                          product['description'] ??
+                              'No Description', // Pass the description field
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showShopIdDialog(context, shopId);
-        },
-        tooltip: 'Edit Shop',
-        child: const Icon(Icons.edit),
-      ),
+    ),
+    floatingActionButton: FloatingActionButton(
+      onPressed: () {
+        _showShopIdDialog(context, shopId);
+      },
+      tooltip: 'Edit Shop',
+      child: const Icon(Icons.edit),
+    ),
+  );
+}
+
+Widget _buildImageCarousel() {
+  List<String> imageUrls = [
+    shopData['image_url'] ?? '',
+    shopData['image1'] ?? '',
+    shopData['image2'] ?? '',
+    shopData['image3'] ?? '',
+    shopData['image4'] ?? '',
+    shopData['image5'] ?? '',
+  ];
+
+  // Filter out empty strings
+  imageUrls = imageUrls.where((url) => url.isNotEmpty).toList();
+
+  if (imageUrls.isEmpty) {
+    return const Center(
+      child: Text('No images available'),
     );
   }
+
+  return CarouselSlider.builder(
+    itemCount: imageUrls.length,
+    itemBuilder: (context, index, realIndex) {
+      return CachedNetworkImage(
+        imageUrl: imageUrls[index],
+        width: double.infinity,
+        height: 400, // Image height same as screen width
+        fit: BoxFit.cover,
+        placeholder: (context, url) =>
+            const Center(child: CircularProgressIndicator()),
+        errorWidget: (context, url, error) =>
+            const Icon(Icons.error, color: Colors.red),
+      );
+    },
+    options: CarouselOptions(
+      height: 300,
+      autoPlay: true,
+      enlargeCenterPage: true,
+      viewportFraction: 1.0,
+      aspectRatio: 2.0,
+      initialPage: 0,
+    ),
+  );
+}
 
   void _showShopIdDialog(BuildContext context, String shopId) {
     final TextEditingController _shopIdController = TextEditingController();
@@ -559,7 +593,7 @@ class ShopProfilePage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                '₹$price',
+                '₹$discountedprice',
                 style: const TextStyle(fontSize: 20),
               ),
             ),
@@ -570,7 +604,7 @@ class ShopProfilePage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
-                  'MRP ₹$discountedprice',
+                  'MRP ₹$price',
                   style: const TextStyle(
                       fontSize: 14, decoration: TextDecoration.lineThrough),
                 ),

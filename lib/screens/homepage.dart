@@ -4,6 +4,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:onshopapp/screens/Products/Productspage.dart';
 import 'package:onshopapp/screens/searchresults.dart';
 import 'package:onshopapp/utils/appbar.dart';
@@ -21,18 +22,76 @@ class _HomePageState extends State<HomePage> {
   String? selectedCity;
   List<String> cities = [];
 
-  @override
-  void initState() {
-    super.initState();
-    _loadInitialData();
-  }
+ @override
+void initState() {
+  super.initState();
+  _loadInitialData();
+  _checkForUpdate(); // Check for updates
+}
 
   void _loadInitialData() {
     _fetchBannerImage();
     _fetchCities();
   }
+@override
+void didChangeDependencies() {
+  super.didChangeDependencies();
+  _checkForUpdate(); // Check for updates
+}
 
   List<String> bannerImages = [];
+
+Future<void> _checkForUpdate() async {
+  try {
+    // Initialize the In-App Update API
+    final updateInfo = await InAppUpdate.checkForUpdate();
+
+    // Check if an update is available
+    if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable) {
+      // Show the update dialog
+      showUpdateDialog();
+    } else {
+      print("No update available.");
+    }
+  } catch (e) {
+    print("Error checking for update: $e");
+  }
+}
+
+void showUpdateDialog() {
+  // Ensure the dialog is shown on the current context
+  if (mounted) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent closing the dialog by tapping outside
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text('Update Available'),
+          content: Text('A new version of the app is available. Please update to the latest version.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Update'),
+              onPressed: () async {
+                // Simulate update process
+                print('Simulating update process...');
+                Navigator.of(dialogContext).pop(); // Close the dialog
+              },
+            ),
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                print('Update cancelled by user.');
+                Navigator.of(dialogContext).pop(); // Close the dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
+  } else {
+    print('Context is not mounted. Cannot show dialog.');
+  }
+}
 
   Future<void> _fetchBannerImage() async {
     try {
@@ -224,101 +283,86 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildAdsSection() {
-    return FutureBuilder<DocumentSnapshot>(
-      future:
-          FirebaseFirestore.instance.collection('homepageads').doc('ads').get(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (!snapshot.hasData ||
-            snapshot.data == null ||
-            snapshot.data!.data() == null) {
-          return const Center(child: Text("No ads available"));
-        }
+  return FutureBuilder<DocumentSnapshot>(
+    future: FirebaseFirestore.instance.collection('homepageads').doc('ads').get(),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      if (!snapshot.hasData ||
+          snapshot.data == null ||
+          snapshot.data!.data() == null) {
+        return const Center(child: Text("No ads available"));
+      }
 
-        // Extract ads and filter out null/empty values
-        Map<String, dynamic> data =
-            snapshot.data!.data() as Map<String, dynamic>;
-        List<String> adImages = [
-          data['ad1'] as String?,
-          data['ad2'] as String?,
-          data['ad3'] as String?,
-          data['ad4'] as String?,
-          data['ad5'] as String?,
-          data['ad6'] as String?,
-          data['ad7'] as String?,
-          data['ad8'] as String?,
-          data['ad9'] as String?,
-          data['ad10'] as String?,
-        ].where((url) => url != null && url.isNotEmpty).cast<String>().toList();
+      // Extract ads and filter out null/empty values
+      Map<String, dynamic> data = snapshot.data!.data() as Map<String, dynamic>;
+      List<String> adImages = [
+        for (int i = 1; i <= 30; i++) data['ad$i'] as String?,
+      ].where((url) => url != null && url.isNotEmpty).cast<String>().toList();
 
-        if (adImages.isEmpty) {
-          return const Center(child: Text("No ads available"));
-        }
+      if (adImages.isEmpty) {
+        return const Center(child: Text("No ads available"));
+      }
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Sponsored Ads",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Sponsored Ads",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            CarouselSlider.builder(
+              itemCount: adImages.length,
+              options: CarouselOptions(
+                height: 380, // Adjusted height to match the previous reference
+                viewportFraction: 1, // Adjusts width for square images
+                enableInfiniteScroll: true,
+                autoPlay: true,
+                autoPlayInterval: const Duration(seconds: 3),
+                autoPlayAnimationDuration: const Duration(milliseconds: 800),
+                enlargeCenterPage: true,
               ),
-              const SizedBox(height: 10),
-              CarouselSlider.builder(
-                itemCount: adImages.length,
-                options: CarouselOptions(
-                  height:
-                      380, // Adjusted height to match the previous reference
-                  viewportFraction: 1, // Adjusts width for square images
-                  enableInfiniteScroll: true,
-                  autoPlay: true,
-                  autoPlayInterval: const Duration(seconds: 3),
-                  autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                  enlargeCenterPage: true,
-                ),
-                itemBuilder: (context, index, realIndex) {
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(10), // Rounded corners
-                    child: CachedNetworkImage(
-                      imageUrl: adImages[index],
-                      fit: BoxFit
-                          .contain, // Ensure the image fits within the container without being cut off
-                      placeholder: (context, url) => Shimmer.fromColors(
-                        baseColor: Colors.grey[300]!,
-                        highlightColor: Colors.grey[100]!,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => Shimmer.fromColors(
-                        baseColor: Colors.grey[300]!,
-                        highlightColor: Colors.grey[100]!,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+              itemBuilder: (context, index, realIndex) {
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(10), // Rounded corners
+                  child: CachedNetworkImage(
+                    imageUrl: adImages[index],
+                    fit: BoxFit.contain, // Ensure the image fits within the container without being cut off
+                    placeholder: (context, url) => Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
-                  );
-                },
-              ),
-              SizedBox(
-                height: 10,
-              )
-            ],
-          ),
-        );
-      },
-    );
-  }
+                    errorWidget: (context, url, error) => Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      );
+    },
+  );
+}
 
   Widget _buildProductCategories() {
   return FutureBuilder<QuerySnapshot>(
@@ -543,7 +587,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 buildSmallCategoryTile(
                   context,
-                  'Taxis',
+                  'Hello Taxi',
                   'asset/taxi.png',
                   'taxicategories',
                 ),
@@ -555,7 +599,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 buildSmallCategoryTile(
                   context,
-                  'Jobs',
+                  'Job Vacancy',
                   'asset/suitcase.png',
                   '',
                 ),

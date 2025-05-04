@@ -3,11 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:onshopapp/screens/jobs/addjobs.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-
+import 'package:share_plus/share_plus.dart'; // Import share_plus package
 
 class JobsListingPage extends StatefulWidget {
   @override
@@ -78,36 +77,36 @@ class _JobsListingPageState extends State<JobsListingPage> {
   }
 
   Future<void> _fetchJobs() async {
-  try {
-    final querySnapshot = await FirebaseFirestore.instance.collection('jobs').get();
-    final jobList = querySnapshot.docs.map((doc) {
-      return {
-        'id': doc.id,
-        'title': doc['title'] ?? '',
-        'description': doc['description'] ?? '',
-        'mobile': doc['mobile'] ?? '',
-        'posteddate': (doc['posteddate'] as Timestamp?)?.toDate() ?? DateTime.now(),
-        'city': doc['city'] ?? '',
-        'gender': doc['gender'] ?? '',
-        'salary': doc['salary'] ?? '',
-        'qualification': doc['qualification'] ?? '',
-        'timeFrom': doc['timeFrom'] ?? '',
-        'timeTo': doc['timeTo'] ?? '',
-      };
-    }).toList();
+    try {
+      final querySnapshot = await FirebaseFirestore.instance.collection('jobs').get();
+      final jobList = querySnapshot.docs.map((doc) {
+        return {
+          'id': doc.id,
+          'title': doc['title'] ?? '',
+          'description': doc['description'] ?? '',
+          'mobile': doc['mobile'] ?? '',
+          'posteddate': (doc['posteddate'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          'city': doc['city'] ?? '',
+          'gender': doc['gender'] ?? '',
+          'salary': doc['salary'] ?? '',
+          'qualification': doc['qualification'] ?? '',
+          'timeFrom': doc['timeFrom'] ?? '',
+          'timeTo': doc['timeTo'] ?? '',
+        };
+      }).toList();
 
-    // Sort the job list by posted date in ascending order
-    jobList.sort((a, b) {
-      return b['posteddate'].compareTo(a['posteddate']);
-    });
+      // Sort the job list by posted date in ascending order
+      jobList.sort((a, b) {
+        return b['posteddate'].compareTo(a['posteddate']);
+      });
 
-    setState(() {
-      jobs = jobList;
-    });
-  } catch (e) {
-    print('Error fetching jobs: $e');
+      setState(() {
+        jobs = jobList;
+      });
+    } catch (e) {
+      print('Error fetching jobs: $e');
+    }
   }
-}
 
   void _makeCall(String phoneNumber) async {
     final uri = Uri(scheme: 'tel', path: phoneNumber);
@@ -134,7 +133,14 @@ class _JobsListingPageState extends State<JobsListingPage> {
     Posted on: ${DateFormat('yyyy-MM-dd').format(job['posteddate'])}
     Shared from OnShop App Jobs
     """;
-    Share.share(shareText);
+
+    try {
+      // Use share_plus to share the job details
+      Share.share(shareText);
+      print('Sharing job details successful');
+    } catch (e) {
+      print('Error while sharing job details: $e');
+    }
   }
 
   @override
@@ -349,68 +355,68 @@ class _JobsListingPageState extends State<JobsListingPage> {
                             ],
                           ),
                           const SizedBox(height: 15),
-                         Row(
-  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  children: [
-    Expanded(
-      child: TextButton(
-        onPressed: () {
-          _makeCall(job['mobile'] ?? '');
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center, // Center the icon and text
-          children: [
-            Icon(Icons.phone, size: 20, color: Colors.white),
-            SizedBox(width: 10),
-            Text(
-              'Call Now',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-        style: TextButton.styleFrom(
-          backgroundColor: Colors.blue,
-          padding: const EdgeInsets.symmetric(vertical: 10), // Adjust padding as needed
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      ),
-    ),
-    SizedBox(width: 10), // Add some space between the buttons
-    Expanded(
-      child: TextButton(
-        onPressed: () {
-          _shareJobDetails(job);
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center, // Center the icon and text
-          children: [
-            Icon(Icons.share, size: 20, color: Colors.white),
-            SizedBox(width: 10),
-            Text(
-              'Share',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-        style: TextButton.styleFrom(
-          backgroundColor: Colors.green,
-          padding: const EdgeInsets.symmetric(vertical: 10), // Adjust padding as needed
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      ),
-    ),
-  ],
-),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Expanded(
+                                child: TextButton(
+                                  onPressed: () {
+                                    _makeCall(job['mobile'] ?? '');
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center, // Center the icon and text
+                                    children: [
+                                      Icon(Icons.phone, size: 20, color: Colors.white),
+                                      SizedBox(width: 10),
+                                      Text(
+                                        'Call Now',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    padding: const EdgeInsets.symmetric(vertical: 10), // Adjust padding as needed
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 10), // Add some space between the buttons
+                              Expanded(
+                                child: TextButton(
+                                  onPressed: () {
+                                    _shareJobDetails(job);
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center, // Center the icon and text
+                                    children: [
+                                      Icon(Icons.share, size: 20, color: Colors.white),
+                                      SizedBox(width: 10),
+                                      Text(
+                                        'Share',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    padding: const EdgeInsets.symmetric(vertical: 10), // Adjust padding as needed
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),

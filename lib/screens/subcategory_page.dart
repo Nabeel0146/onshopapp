@@ -28,25 +28,25 @@ class SubcategoryGridPage extends StatelessWidget {
   }
 
   Future<List<String>> _fetchBannerImageUrls() async {
-    try {
-      final querySnapshot = await FirebaseFirestore.instance
-          .collection('shoppagebanners')
-          .doc('banner')
-          .get();
-      final data = querySnapshot.data();
-      List<String> bannerUrls = [];
-      for (int i = 1; i <= 10; i++) {
-        final key = 'ad$i';
-        if (data != null && data.containsKey(key) && data[key] is String) {
-          bannerUrls.add(data[key] as String);
-        }
+  try {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('shoppagebanners')
+        .doc('banner')
+        .get();
+    final data = querySnapshot.data();
+    List<String> bannerUrls = [];
+    for (int i = 1; i <= 30; i++) { // Update the loop to fetch up to 30 images
+      final key = 'ad$i';
+      if (data != null && data.containsKey(key) && data[key] is String) {
+        bannerUrls.add(data[key] as String);
       }
-      return bannerUrls;
-    } catch (e) {
-      print('Error fetching banner images: $e');
-      return [];
     }
+    return bannerUrls;
+  } catch (e) {
+    print('Error fetching banner images: $e');
+    return [];
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -148,7 +148,7 @@ class SubcategoryGridPage extends StatelessWidget {
                             );
                           }).toList(),
                           options: CarouselOptions(
-                            height: 380,
+                            height: 340,
                             enlargeCenterPage: true,
                             autoPlay: true,
                             aspectRatio: 16 / 9,

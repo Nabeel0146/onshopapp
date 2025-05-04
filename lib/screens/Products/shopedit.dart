@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:onshopapp/screens/Products/sliderimageedit.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ShopEditPage extends StatefulWidget {
@@ -221,143 +222,161 @@ class _ShopEditPageState extends State<ShopEditPage> {
     }
   }
 
-void _editProduct(String productId, Map<String, dynamic> productData) {
-  TextEditingController nameController =
-      TextEditingController(text: productData['name']);
-  TextEditingController descController =
-      TextEditingController(text: productData['description']);
-  TextEditingController priceController =
-      TextEditingController(text: productData['price']?.toString() ?? '');
-  TextEditingController discountedPriceController = TextEditingController(
-      text: productData['discountedprice']?.toString() ?? '');
-  String? selectedCategory = productData['category'];
-  File? localProductImage; // Local variable to hold the selected product image
-  String? currentImageUrl = productData['image_url']; // Current image URL from Firestore
-  bool isSaving = false; // Flag to track if the save operation is in progress
+  void _editProduct(String productId, Map<String, dynamic> productData) {
+    TextEditingController nameController =
+        TextEditingController(text: productData['name']);
+    TextEditingController descController =
+        TextEditingController(text: productData['description']);
+    TextEditingController priceController =
+        TextEditingController(text: productData['price']?.toString() ?? '');
+    TextEditingController discountedPriceController = TextEditingController(
+        text: productData['discountedprice']?.toString() ?? '');
+    String? selectedCategory = productData['category'];
+    File?
+        localProductImage; // Local variable to hold the selected product image
+    String? currentImageUrl =
+        productData['image_url']; // Current image URL from Firestore
+    bool isSaving = false; // Flag to track if the save operation is in progress
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: Text("Edit Product"),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildTextField("Product Name", nameController),
-                _buildTextField("Description", descController),
-                _buildTextField("Price", priceController, isNumeric: true),
-                _buildTextField("Discounted Price", discountedPriceController,
-                    isNumeric: true),
-                DropdownButton<String>(
-                  value: selectedCategory,
-                  hint: Text("Select Category"),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedCategory = newValue;
-                    });
-                  },
-                  items: categories.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text("Edit Product"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildTextField("Product Name", nameController),
+                  _buildTextField("Description", descController),
+                  _buildTextField("Price", priceController, isNumeric: true),
+                  _buildTextField("Discounted Price", discountedPriceController,
+                      isNumeric: true),
+                  DropdownButton<String>(
+                    value: selectedCategory,
+                    hint: Text("Select Category"),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedCategory = newValue;
+                      });
+                    },
+                    items: categories
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                  // Display current image or a placeholder
+                  currentImageUrl != null && currentImageUrl.isNotEmpty
+                      ? Image.network(
+                          currentImageUrl,
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                        )
+                      : Icon(Icons.image, size: 100),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final ImagePicker _picker = ImagePicker();
+                      final XFile? pickedFile =
+                          await _picker.pickImage(source: ImageSource.gallery);
+
+                      if (pickedFile != null) {
+                        setState(() {
+                          localProductImage = File(pickedFile.path);
+                        });
+                      }
+                    },
+                    child: Text("Change Image"),
+                  ),
+
+                  if (localProductImage != null)
+                    Image.file(localProductImage!,
+                        width: 100, height: 100, fit: BoxFit.cover),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text("Cancel"),
                 ),
-                // Display current image or a placeholder
-                currentImageUrl != null && currentImageUrl.isNotEmpty
-                    ? Image.network(
-                        currentImageUrl,
-                        width: 100,
-                        height: 100,
-                        fit: BoxFit.cover,
-                      )
-                    : Icon(Icons.image, size: 100),
                 ElevatedButton(
-                  onPressed: () async {
-                    final ImagePicker _picker = ImagePicker();
-                    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+                  onPressed: isSaving
+                      ? null
+                      : () async {
+                          setState(() {
+                            isSaving =
+                                true; // Set the flag to true to show the progress indicator
+                          });
 
-                    if (pickedFile != null) {
-                      setState(() {
-                        localProductImage = File(pickedFile.path);
-                      });
-                    }
-                  },
-                  child: Text("Change Image"),
+                          if (selectedCategory == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text("Please select a category")));
+                            setState(() {
+                              isSaving =
+                                  false; // Reset the flag if validation fails
+                            });
+                            return;
+                          }
+
+                          String imageUrl = currentImageUrl ?? '';
+                          if (localProductImage != null) {
+                            try {
+                              imageUrl =
+                                  await _uploadProductImage(localProductImage!);
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content:
+                                          Text("Error uploading image: $e")));
+                              setState(() {
+                                isSaving =
+                                    false; // Reset the flag if upload fails
+                              });
+                              return;
+                            }
+                          }
+
+                          await FirebaseFirestore.instance
+                              .collection('products')
+                              .doc(productId)
+                              .update({
+                            'name': nameController.text,
+                            'description': descController.text,
+                            'image_url': imageUrl,
+                            'price': priceController.text.isNotEmpty
+                                ? int.tryParse(priceController.text)
+                                : null,
+                            'discountedprice': discountedPriceController
+                                    .text.isNotEmpty
+                                ? int.tryParse(discountedPriceController.text)
+                                : null,
+                            'category': selectedCategory,
+                          });
+
+                          setState(() {
+                            isSaving =
+                                false; // Reset the flag after successful save
+                          });
+
+                          Navigator.pop(context);
+                        },
+                  child: isSaving
+                      ? CircularProgressIndicator()
+                      : Text("Save Changes"),
                 ),
-                if (localProductImage != null)
-                  Image.file(localProductImage!, width: 100, height: 100, fit: BoxFit.cover),
               ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text("Cancel"),
-              ),
-              ElevatedButton(
-                onPressed: isSaving ? null : () async {
-                  setState(() {
-                    isSaving = true; // Set the flag to true to show the progress indicator
-                  });
+            );
+          },
+        );
+      },
+    );
+  }
 
-                  if (selectedCategory == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Please select a category")));
-                    setState(() {
-                      isSaving = false; // Reset the flag if validation fails
-                    });
-                    return;
-                  }
-
-                  String imageUrl = currentImageUrl ?? '';
-                  if (localProductImage != null) {
-                    try {
-                      imageUrl = await _uploadProductImage(localProductImage!);
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Error uploading image: $e")));
-                      setState(() {
-                        isSaving = false; // Reset the flag if upload fails
-                      });
-                      return;
-                    }
-                  }
-
-                  await FirebaseFirestore.instance
-                      .collection('products')
-                      .doc(productId)
-                      .update({
-                    'name': nameController.text,
-                    'description': descController.text,
-                    'image_url': imageUrl,
-                    'price': priceController.text.isNotEmpty
-                        ? int.tryParse(priceController.text)
-                        : null,
-                    'discountedprice': discountedPriceController.text.isNotEmpty
-                        ? int.tryParse(discountedPriceController.text)
-                        : null,
-                    'category': selectedCategory,
-                  });
-
-                  setState(() {
-                    isSaving = false; // Reset the flag after successful save
-                  });
-
-                  Navigator.pop(context);
-                },
-                child: isSaving ? CircularProgressIndicator() : Text("Save Changes"),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
-
-  Future<void> _addProduct() async {
+ Future<void> _addProduct() async {
   TextEditingController nameController = TextEditingController();
   TextEditingController descController = TextEditingController();
   TextEditingController priceController = TextEditingController();
@@ -374,45 +393,50 @@ void _editProduct(String productId, Map<String, dynamic> productData) {
         builder: (context, setState) {
           return AlertDialog(
             title: Text("Add New Product"),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildTextField("Product Name", nameController),
-                _buildTextField("Description", descController),
-                _buildTextField("Price", priceController, isNumeric: true),
-                _buildTextField("Discounted Price", discountedPriceController,
-                    isNumeric: true),
-                DropdownButton<String>(
-                  value: selectedCategory,
-                  hint: Text("Select Category"),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedCategory = newValue;
-                    });
-                  },
-                  items: categories.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    final ImagePicker _picker = ImagePicker();
-                    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-
-                    if (pickedFile != null) {
+            content: SingleChildScrollView( // Wrap the content with SingleChildScrollView
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildTextField("Product Name", nameController),
+                  _buildTextField("Description", descController),
+                  _buildTextField("Price", priceController, isNumeric: true),
+                  _buildTextField("Discounted Price", discountedPriceController,
+                      isNumeric: true),
+                  DropdownButton<String>(
+                    value: selectedCategory,
+                    hint: Text("Select Category"),
+                    onChanged: (String? newValue) {
                       setState(() {
-                        localProductImage = File(pickedFile.path);
+                        selectedCategory = newValue;
                       });
-                    }
-                  },
-                  child: Text("Pick Product Image"),
-                ),
-                if (localProductImage != null)
-                  Image.file(localProductImage!, width: 100, height: 100, fit: BoxFit.cover),
-              ],
+                    },
+                    items: categories
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      final ImagePicker _picker = ImagePicker();
+                      final XFile? pickedFile =
+                          await _picker.pickImage(source: ImageSource.gallery);
+
+                      if (pickedFile != null) {
+                        setState(() {
+                          localProductImage = File(pickedFile.path);
+                        });
+                      }
+                    },
+                    child: Text("Pick Product Image"),
+                  ),
+                  if (localProductImage != null)
+                    Image.file(localProductImage!,
+                        width: 100, height: 100, fit: BoxFit.cover),
+                ],
+              ),
             ),
             actions: [
               TextButton(
@@ -420,67 +444,80 @@ void _editProduct(String productId, Map<String, dynamic> productData) {
                 child: Text("Cancel"),
               ),
               ElevatedButton(
-                onPressed: isSaving ? null : () async {
-                  setState(() {
-                    isSaving = true; // Set the flag to true to show the progress indicator
-                  });
+                onPressed: isSaving
+                    ? null
+                    : () async {
+                        setState(() {
+                          isSaving =
+                              true; // Set the flag to true to show the progress indicator
+                        });
 
-                  if (selectedCategory == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Please select a category")));
-                    setState(() {
-                      isSaving = false; // Reset the flag if validation fails
-                    });
-                    return;
-                  }
+                        if (selectedCategory == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("Please select a category")));
+                          setState(() {
+                            isSaving =
+                                false; // Reset the flag if validation fails
+                          });
+                          return;
+                        }
 
-                  if (localProductImage == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Please select an image")));
-                    setState(() {
-                      isSaving = false; // Reset the flag if validation fails
-                    });
-                    return;
-                  }
+                        if (localProductImage == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("Please select an image")));
+                          setState(() {
+                            isSaving =
+                                false; // Reset the flag if validation fails
+                          });
+                          return;
+                        }
 
-                  String imageUrl;
-                  try {
-                    imageUrl = await _uploadProductImage(localProductImage!);
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Error uploading image: $e")));
-                    setState(() {
-                      isSaving = false; // Reset the flag if upload fails
-                    });
-                    return;
-                  }
+                        String imageUrl;
+                        try {
+                          imageUrl =
+                              await _uploadProductImage(localProductImage!);
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text("Error uploading image: $e")));
+                          setState(() {
+                            isSaving =
+                                false; // Reset the flag if upload fails
+                          });
+                          return;
+                        }
 
-                  await FirebaseFirestore.instance.collection('products').add({
-                    'shopid': widget.shopId,
-                    'name': nameController.text,
-                    'description': descController.text,
-                    'image_url': imageUrl,
-                    'price': priceController.text.isNotEmpty
-                        ? int.tryParse(priceController.text)
-                        : null,
-                    'discountedprice': discountedPriceController.text.isNotEmpty
-                        ? int.tryParse(discountedPriceController.text)
-                        : null,
-                    'city': shopDetails?['city'] ?? '',
-                    'display': true,
-                    'category': selectedCategory,
-                    'whatsappnumber': shopDetails?['whatsapp'] ?? '',
-                  });
+                        await FirebaseFirestore.instance
+                            .collection('products')
+                            .add({
+                          'shopid': widget.shopId,
+                          'name': nameController.text,
+                          'description': descController.text,
+                          'image_url': imageUrl,
+                          'price': priceController.text.isNotEmpty
+                              ? int.tryParse(priceController.text)
+                              : null,
+                          'discountedprice': discountedPriceController
+                              .text.isNotEmpty
+                              ? int.tryParse(discountedPriceController.text)
+                              : null,
+                          'city': shopDetails?['city'] ?? '',
+                          'display': true,
+                          'category': selectedCategory,
+                          'whatsappnumber': shopDetails?['whatsapp'] ?? '',
+                        });
 
-                  setState(() {
-                    isSaving = false; // Reset the flag after successful save
-                  });
+                        setState(() {
+                          isSaving =
+                              false; // Reset the flag after successful save
+                        });
 
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Product added successfully")));
-                },
-                child: isSaving ? CircularProgressIndicator() : Text("Add Product"),
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text("Product added successfully")));
+                      },
+                child: isSaving
+                    ? CircularProgressIndicator()
+                    : Text("Add Product"),
               ),
             ],
           );
@@ -564,11 +601,50 @@ void _editProduct(String productId, Map<String, dynamic> productData) {
                     onPressed: _pickImage,
                     child: Text("Change Image"),
                   ),
-
-                  // Display the selected image
                   if (_selectedImage != null)
                     Image.file(_selectedImage!,
                         width: 100, height: 100, fit: BoxFit.cover),
+                  SizedBox(height: 10),
+                  // ElevatedButton(
+                  //   onPressed: () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (context) => SliderImagesEdit(
+                  //           shopId: widget.shopId,
+                  //           shopDetails: shopDetails,
+                  //         ),
+                  //       ),
+                  //     );
+                  //   },
+                  //   style: ElevatedButton.styleFrom(
+                  //     backgroundColor:
+                  //         Colors.amber, // Set the background color to amber
+                  //     shape: RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.circular(
+                  //           10), // Set the border radius for rounded corners
+                  //     ),
+                  //   ),
+                  //   child: SizedBox(
+                  //     width: 180,
+                  //     child: Row(
+                  //       mainAxisAlignment: MainAxisAlignment.center,
+                  //       children: [
+                  //         Text(
+                  //           "Change Slider Images",
+                  //           style: TextStyle(color: Colors.white),
+                  //         ),
+                  //         Icon(
+                  //           Icons.arrow_right,
+                  //           color: Colors.white,
+                  //         )
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
+
+                  // Display the selected image
+                  
 
                   SizedBox(height: 20),
 

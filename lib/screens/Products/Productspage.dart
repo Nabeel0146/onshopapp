@@ -252,7 +252,7 @@ class _ProductsPageState extends State<ProductsPage> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 8.0),
                               child: Text(
-                                '₹${item['price'] ?? 'N/A'}',
+                                '₹${item['discountedprice'] ?? 'N/A'}',
                                 style: const TextStyle(fontSize: 20),
                               ),
                             ),
@@ -261,7 +261,7 @@ class _ProductsPageState extends State<ProductsPage> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 8.0),
                               child: Text(
-                                'MRP ₹${item['discountedprice'] ?? 'N/A'}',
+                                'MRP ₹${item['price'] ?? 'N/A'}',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   decoration: TextDecoration

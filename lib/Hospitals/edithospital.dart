@@ -50,6 +50,9 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
         TextEditingController(text: widget.hospitalData['image_url']);
     _mapLinkController =
         TextEditingController(text: widget.hospitalData['maplink']);
+
+    // Debug statement to print the hospitalData
+    print('Hospital Data: ${widget.hospitalData}');
   }
 
   @override
@@ -67,7 +70,7 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
     super.dispose();
   }
 
- Future<void> _updateHospital() async {
+  Future<void> _updateHospital() async {
   final name = _nameController.text;
   final description = _descriptionController.text;
   final phone = _phoneController.text;
@@ -82,25 +85,33 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
   }
 
   try {
-    DocumentReference docRef = FirebaseFirestore.instance
+    // 🔍 Fetch the document where the field 'hospitalid' matches widget.hospitalId
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('hospitallisting')
-        .doc(widget.hospitalId);
+        .where('hospitalid', isEqualTo: widget.hospitalId)
+        .get();
 
-    DocumentSnapshot snapshot = await docRef.get();
-
-    // Debug statement to print the document ID and data
-    print('Document ID: ${snapshot.id}');
-    print('Document Data: ${snapshot.data()}');
-
-    if (!snapshot.exists) {
+    if (querySnapshot.docs.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Hospital document does not exist')),
+        const SnackBar(content: Text('Hospital document not found')),
       );
       return;
     }
 
-    // Cast the snapshot data to a Map<String, dynamic>
-    Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+    // ✅ Get the actual Firestore document ID
+    DocumentSnapshot doc = querySnapshot.docs.first;
+    String actualDocId = doc.id;
+    print('Actual Document ID: $actualDocId');
+
+    Map<String, dynamic>? data = doc.data() as Map<String, dynamic>?;
+
+    if (data == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to fetch hospital data')),
+      );
+      return;
+    }
+
     String imageUrl = data['image_url'] ?? '';
 
     if (_selectedImage != null) {
@@ -114,7 +125,10 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
       }
     }
 
-    await docRef.update({
+    await FirebaseFirestore.instance
+        .collection('hospitallisting')
+        .doc(actualDocId)
+        .update({
       'name': name,
       'description': description,
       'mobile': phone,
@@ -133,6 +147,7 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
     );
   }
 }
+
 
   void _showAddDoctorDialog() {
     List<String> daysOfWeek = [
@@ -390,12 +405,12 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
   }
 
   Future<String> _uploadImage(File imageFile) async {
-  Reference storageReference = FirebaseStorage.instance.ref().child(
-      'hospital_images/${widget.hospitalId}/${DateTime.now().millisecondsSinceEpoch}');
-  UploadTask uploadTask = storageReference.putFile(imageFile);
-  TaskSnapshot taskSnapshot = await uploadTask;
-  return await taskSnapshot.ref.getDownloadURL();
-}
+    Reference storageReference = FirebaseStorage.instance.ref().child(
+        'hospital_images/${widget.hospitalId}/${DateTime.now().millisecondsSinceEpoch}');
+    UploadTask uploadTask = storageReference.putFile(imageFile);
+    TaskSnapshot taskSnapshot = await uploadTask;
+    return await taskSnapshot.ref.getDownloadURL();
+  }
 
   Future<void> _addDoctor(TimeOfDay startTime, TimeOfDay endTime,
       String startDay, String endDay, String imageUrl) async {
@@ -460,42 +475,6 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
       });
     }
   }
-
-  // Future<void> _addDoctor(TimeOfDay startTime, TimeOfDay endTime,
-  //     String startDay, String endDay) async {
-  //   final name = _doctorNameController.text;
-  //   final description = _doctorDescriptionController.text;
-
-  //   if (name.isEmpty || description.isEmpty) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(
-  //           content:
-  //               Text('Please fill all the required fields for the doctor')),
-  //     );
-  //     return;
-  //   }
-
-  //   try {
-  //     await FirebaseFirestore.instance.collection('doctors').add({
-  //       'name': name,
-  //       'description': description,
-  //       'timing': '${startTime.format(context)}-${endTime.format(context)}',
-  //       'days': '$startDay-$endDay',
-  //       'hospital': widget.hospitalData['name'],
-  //       'hospitalid': widget.hospitalId,
-  //     });
-
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Doctor added successfully')),
-  //     );
-  //     _doctorNameController.clear();
-  //     _doctorDescriptionController.clear();
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Error adding doctor: $e')),
-  //     );
-  //   }
-  // }
 
   void _showEditDoctorDialog(String doctorId, Map<String, dynamic> doctorData) {
     final TextEditingController nameController =
@@ -776,85 +755,94 @@ class _HospitalEditPageState extends State<HospitalEditPage> {
             ),
             const SizedBox(height: 20),
             StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('doctors')
-                  .where('hospitalid', isEqualTo: widget.hospitalId)
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+  stream: FirebaseFirestore.instance
+      .collection('doctors')
+      .where('hospitalid', isEqualTo: widget.hospitalId)
+      .snapshots(),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("No doctors found."));
-                }
+    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+      return const Center(child: Text("No doctors found."));
+    }
 
-                var doctors = snapshot.data!.docs;
+    var doctors = snapshot.data!.docs;
 
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: doctors.length,
-                  itemBuilder: (context, index) {
-                    var doctor = doctors[index].data() as Map<String, dynamic>;
-                    String doctorId = doctors[index].id;
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: doctors.length,
+      itemBuilder: (context, index) {
+        var doctor = doctors[index].data() as Map<String, dynamic>;
+        String doctorId = doctors[index].id;
 
-                    return Container(
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                            color: Colors.grey, width: 1), // Add a border
-                        borderRadius:
-                            BorderRadius.circular(10), // Rounded corners
-                      ),
-                      child: ListTile(
-                        title: Text(doctor['name'] ?? 'Unnamed Doctor'),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(doctor['description'] ?? ''),
-                            Text('Timing: ${doctor['timing'] ?? ''}'),
-                            Text('Days: ${doctor['days'] ?? ''}'),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () =>
-                                  _showEditDoctorDialog(doctorId, doctor),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () async {
-                                try {
-                                  await FirebaseFirestore.instance
-                                      .collection('doctors')
-                                      .doc(doctorId)
-                                      .delete();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            'Doctor deleted successfully')),
-                                  );
-                                } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content:
-                                            Text('Error deleting doctor: $e')),
-                                  );
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
+        // Extract the image URL from the doctor's data
+        String imageUrl = doctor['image_url'] ?? '';
+
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            border: Border.all(
+                color: Colors.grey, width: 1), // Add a border
+            borderRadius:
+                BorderRadius.circular(10), // Rounded corners
+          ),
+          child: ListTile(
+            // Display the doctor's image in the leading part
+            leading: imageUrl.isNotEmpty
+                ? Image.network(
+                    imageUrl,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                  )
+                : const Icon(Icons.image, size: 50, color: Colors.grey),
+
+            title: Text(doctor['name'] ?? 'Unnamed Doctor'),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(doctor['description'] ?? ''),
+                Text('Timing: ${doctor['timing'] ?? ''}'),
+                Text('Days: ${doctor['days'] ?? ''}'),
+              ],
             ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.blue),
+                  onPressed: () => _showEditDoctorDialog(doctorId, doctor),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () async {
+                    try {
+                      await FirebaseFirestore.instance
+                          .collection('doctors')
+                          .doc(doctorId)
+                          .delete();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Doctor deleted successfully')),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error deleting doctor: $e')),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  },
+),
           ],
         ),
       ),

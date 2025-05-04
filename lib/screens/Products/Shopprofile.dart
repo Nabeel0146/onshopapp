@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/widgets.dart';
 import 'package:onshopapp/screens/Products/shopedit.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -504,7 +505,7 @@ Widget _buildImageCarousel() {
               width: 24,
               height: 24,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             Text(
               text,
               style:
@@ -516,129 +517,169 @@ Widget _buildImageCarousel() {
     );
   }
 
-  Widget _buildProductCard(String name, int price, int discountedprice,
-      String imageUrl, String whatsappNumber, String description) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.grey, // Border color
-          width: 0.5, // Border width
-        ),
-        borderRadius: BorderRadius.circular(8), // Rounded corners
+ Widget _buildProductCard(
+  String name,
+  int price,
+  int discountedprice,
+  String imageUrl,
+  String whatsappNumber,
+  String description,
+) {
+  return Container(
+    decoration: BoxDecoration(
+      border: Border.all(
+        color: Colors.grey,
+        width: 0.5,
       ),
-      child: Card(
-        elevation: 0, // Flat look
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8), // Rounded corners
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Image
-            if (imageUrl.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: AspectRatio(
-                  aspectRatio: 4 / 4,
-                  child: CachedNetworkImage(
-                    imageUrl: imageUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: Colors.grey[300],
-                      child: const Center(child: CircularProgressIndicator()),
-                    ),
-                    errorWidget: (context, url, error) => const Icon(
-                      Icons.image_not_supported,
-                      size: 40,
-                      color: Colors.grey,
-                    ),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [if (imageUrl.isNotEmpty)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: AspectRatio(
+                aspectRatio: 4 / 4,
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey[300],
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.error),
                   ),
                 ),
-              )
-            else
-              AspectRatio(
-                aspectRatio: 3 / 3,
-                child: Container(
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.image_not_supported,
-                      size: 40, color: Colors.grey),
-                ),
               ),
-            const SizedBox(height: 8),
-
-            // Product Name
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                name,
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            )
+          else
+            AspectRatio(
+              aspectRatio: 3 / 3,
+              child: Container(
+                color: Colors.grey[300],
+                child: const Icon(Icons.image_not_supported,
+                    size: 40, color: Colors.grey),
               ),
             ),
-            const SizedBox(height: 2),
 
-            // Product Description
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          const SizedBox(height: 4),
+
+          // Product Name
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              name,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 1),
+
+          // Product Description with colored background
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2.0),
+            child: Container(
+              color: const Color.fromARGB(255, 254, 247, 204),
+              padding: const EdgeInsets.all(6.0),
               child: Text(
                 description,
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(height: 2),
-
-            // Product Price
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                '₹$discountedprice',
-                style: const TextStyle(fontSize: 20),
-              ),
-            ),
-            const SizedBox(height: 2),
-
-            // Discounted Price
-            if (discountedprice > 0)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  'MRP ₹$price',
-                  style: const TextStyle(
-                      fontSize: 14, decoration: TextDecoration.lineThrough),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.black,
                 ),
               ),
-            const SizedBox(height: 4),
+            ),
+          ),
 
-            // Order Now Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  openWhatsAppWithDetails(
-                    whatsappNumber,
-                    name,
-                    price,
-                    discountedprice,
-                    description,
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+          const SizedBox(height: 1),
+
+          // Discounted Price
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              '₹$discountedprice',
+              style: const TextStyle(fontSize: 18),
+            ),
+          ),
+
+          const SizedBox(height: 2),
+
+          // Original Price
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              'MRP ₹$price',
+              style: const TextStyle(
+                fontSize: 12,
+                decoration: TextDecoration.lineThrough,
+              ),
+            ),
+          ),
+
+          // WhatsApp Order Button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 2.0),
+            child: ElevatedButton(
+              onPressed: () {
+                openWhatsAppWithDetails(
+                  whatsappNumber,
+                  name,
+                  price,
+                  discountedprice,
+                  description,
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'asset/whatsapp.png',
+                    width: 16,
+                    height: 16,
                   ),
-                ),
-                child: const Text(
-                  "Order Now",
-                  style: TextStyle(color: Colors.white),
-                ),
+                  const SizedBox(width: 2),
+                  const Text(
+                    'Order on Whatsapp',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),],
+            ),
+          )
+          // Image
+          
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

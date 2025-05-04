@@ -26,7 +26,8 @@ class _ProductsPageState extends State<ProductsPage> {
     // Initialization logic if needed
   }
 
-  Future<List<Map<String, dynamic>>> _fetchFilteredItems(String category) async {
+  Future<List<Map<String, dynamic>>> _fetchFilteredItems(
+      String category) async {
     try {
       final querySnapshot = await FirebaseFirestore.instance
           .collection('products')
@@ -50,7 +51,10 @@ class _ProductsPageState extends State<ProductsPage> {
         return 'No address provided';
       }
 
-      final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
       if (!userDoc.exists) {
         return 'No address provided';
       }
@@ -62,7 +66,8 @@ class _ProductsPageState extends State<ProductsPage> {
     }
   }
 
-  Future<void> _openWhatsApp(String phoneNumber, String productName, int price, int discountedPrice, String description) async {
+  Future<void> _openWhatsApp(String phoneNumber, String productName, int price,
+      int discountedPrice, String description) async {
     final userAddress = await getUserAddress();
     final formattedPhoneNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
     final productDetails = """
@@ -73,7 +78,8 @@ class _ProductsPageState extends State<ProductsPage> {
     Address: $userAddress
     """;
 
-    final uri = Uri.parse('https://wa.me/$formattedPhoneNumber?text=${Uri.encodeComponent(productDetails)}');
+    final uri = Uri.parse(
+        'https://wa.me/$formattedPhoneNumber?text=${Uri.encodeComponent(productDetails)}');
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -108,7 +114,8 @@ class _ProductsPageState extends State<ProductsPage> {
               children: [
                 const SizedBox(width: 45),
                 ClipRRect(
-                  child: Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
+                  child:
+                      Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -174,133 +181,167 @@ class _ProductsPageState extends State<ProductsPage> {
                   itemBuilder: (context, index) {
                     final item = items[index];
                     return Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors
-                              .grey, // You can change the border color as needed
-                          width: 0.5, // Set the border width to 0.5
-                        ),
-                        borderRadius: BorderRadius.circular(
-                            8), // Optional: Add rounded corners
-                      ),
-                      child: Card(
-                        elevation:
-                            0, // Remove the default shadow if you want a flat look
-                        shape: RoundedRectangleBorder(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors
+                                .grey, // You can change the border color as needed
+                            width: 0.5, // Set the border width to 0.5
+                          ),
                           borderRadius: BorderRadius.circular(
-                              8), // Ensure the Card has rounded corners
+                              8), // Optional: Add rounded corners
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            if (item['image_url'] != null &&
-                                item['image_url'].toString().isNotEmpty)
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: AspectRatio(
-                                  aspectRatio: 4 / 4,
-                                  child: CachedNetworkImage(
-                                    imageUrl: item['image_url'],
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => Container(
-                                      color: Colors.grey[300],
-                                      child: const Center(
-                                        child: CircularProgressIndicator(),
+                        child: Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    if (item['image_url'] != null &&
+                                        item['image_url'].toString().isNotEmpty)
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: AspectRatio(
+                                          aspectRatio: 4 / 4,
+                                          child: CachedNetworkImage(
+                                            imageUrl: item['image_url'],
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) =>
+                                                Container(
+                                              color: Colors.grey[300],
+                                              child: const Center(
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              ),
+                                            ),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    Container(
+                                              color: Colors.grey[300],
+                                              child: const Icon(Icons.error),
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    else
+                                      AspectRatio(
+                                        aspectRatio: 3 / 3,
+                                        child: Container(
+                                          color: Colors.grey[300],
+                                          child: const Icon(
+                                              Icons.image_not_supported),
+                                        ),
+                                      ),
+                                    const SizedBox(height: 8),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0),
+                                      child: Text(
+                                        item['name'] ?? 'No Name',
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
-                                    errorWidget: (context, url, error) =>
-                                        Container(
-                                      color: Colors.grey[300],
-                                      child: const Icon(Icons.error),
+                                    const SizedBox(height: 1),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 2.0),
+                                      child: Container(
+                                        color: const Color.fromARGB(
+                                            255, 254, 247, 204),
+                                        padding: const EdgeInsets.all(6.0),
+                                        child: Text(
+                                          item['description'] ??
+                                              'No Description',
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 1),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0),
+                                      child: Text(
+                                        '₹${item['discountedprice'] ?? 'N/A'}',
+                                        style: const TextStyle(fontSize: 18),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8.0),
+                                      child: Text(
+                                        'MRP ₹${item['price'] ?? 'N/A'}',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          decoration:
+                                              TextDecoration.lineThrough,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 1.0, vertical: 2.0),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    if (item['whatsappnumber'] != null) {
+                                      _openWhatsApp(
+                                        item['whatsappnumber'],
+                                        item['name'] ?? 'No Name',
+                                        item['price'] ?? 0,
+                                        item['discountedprice'] ?? 0,
+                                        item['description'] ?? 'No Description',
+                                      );
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(6),
                                     ),
                                   ),
-                                ),
-                              )
-                            else
-                              AspectRatio(
-                                aspectRatio: 3 / 3,
-                                child: Container(
-                                  color: Colors.grey[300],
-                                  child: const Icon(Icons.image_not_supported),
-                                ),
-                              ),
-                            const SizedBox(height: 8),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text(
-                                item['name'] ?? 'No Name',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text(
-                                item['description'] ?? 'No Description',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text(
-                                '₹${item['discountedprice'] ?? 'N/A'}',
-                                style: const TextStyle(fontSize: 20),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text(
-                                'MRP ₹${item['price'] ?? 'N/A'}',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  decoration: TextDecoration
-                                      .lineThrough, // Add strikethrough
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 2.0),
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  if (item['whatsappnumber'] != null) {
-                                    _openWhatsApp(
-                                      item['whatsappnumber'],
-                                      item['name'] ?? 'No Name',
-                                      item['price'] ?? 0,
-                                      item['discountedprice'] ?? 0,
-                                      item['description'] ?? 'No Description',
-                                    );
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize
+                                        .min, // Wrap content tightly
+                                    children: [
+                                      Image.asset(
+                                        'asset/whatsapp.png',
+                                        width: 16,
+                                        height: 16,
+                                      ),
+                                      const SizedBox(width: 2),
+                                      const Text(
+                                        'Order on Whatsapp',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                child: const Text(
-                                  'Order on Whatsapp',
-                                  style: TextStyle(color: Colors.white),
-                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
+                            ],
+                          ),
+                        ));
                   },
                 );
               },

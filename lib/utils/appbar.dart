@@ -40,7 +40,7 @@ class GradientAppBar extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color.fromARGB(255, 255, 185, 41), // Orange
+            const Color.fromARGB(255, 41, 219, 255), // Orange
             Colors.white, // White
           ],
           begin: Alignment.topCenter,
@@ -77,8 +77,9 @@ class AppBarContent extends StatelessWidget {
           children: [
             const SizedBox(width: 16),
             ClipRRect(
+              borderRadius: BorderRadius.circular(15),
               child: Image.asset(
-                "asset/onshopnewcurvedlogo.png",
+                "asset/citydotcomlogo copy.png",
                 width: 60,
               ),
             ),
@@ -138,8 +139,7 @@ class AppBarContent extends StatelessWidget {
 
                   final userData = snapshot.data!.data() as Map<String, dynamic>?;
                   final userName = userData?['name'] as String? ?? 'Guest';
-                  final cardNo = userData?['cardno'] as String? ??
-                      "Contact Us to get the discount card!";
+                  
 
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -157,16 +157,7 @@ class AppBarContent extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(
-                        cardNo?.isNotEmpty == true
-                            ? 'Card No: $cardNo'
-                            : "Contact Us to get the discount card!",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: cardNo?.isNotEmpty == true ? 14 : 12, // Set fontSize based on cardNo
-                        ),
-                      ),
+                      
                     ],
                   );
                 },

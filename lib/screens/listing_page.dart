@@ -610,29 +610,36 @@ class _ListingPageState extends State<ListingPage> {
                           ),
                         ),
                         if (item['associate'] == true)
-  Positioned(
-    top: 8,
-    right: 8,
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-      decoration: const BoxDecoration(
-        color: Colors.green,
-        borderRadius: BorderRadius.only(topRight: Radius.circular(5)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.check, color: Colors.white, size: 16),
-          const SizedBox(width: 4),
-          Text(
-            item['approvetext'] == true ? 'Verified' : 'Discount Card Accepted',
-            style: const TextStyle(
-                color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    ),
-  ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 1),
+                              decoration: const BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.only(
+                                    topRight: Radius.circular(5)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.check,
+                                      color: Colors.white, size: 16),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    item['approvetext'] == true
+                                        ? 'Verified'
+                                        : 'Discount Card Accepted',
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   );

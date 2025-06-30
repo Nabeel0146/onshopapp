@@ -14,15 +14,16 @@ class ShopProfilePage extends StatelessWidget {
   const ShopProfilePage({required this.shopData, Key? key}) : super(key: key);
 
   void makeCall(String phoneNumber) async {
-    final uri = Uri(scheme: 'tel', path: phoneNumber);
-    try {
-      if (!await launchUrl(uri)) {
-        print('Could not launch $uri');
-      }
-    } catch (e) {
-      print('Error occurred: $e');
+  final uri = Uri(scheme: 'tel', path: phoneNumber);
+  try {
+    if (!await launchUrl(uri)) {
+      print('Could not launch $uri');
     }
+  } catch (e) {
+    print('Error occurred: $e');
   }
+}
+
 
   void openWhatsAppChat(String whatsappNumber) async {
     final whatsappUrl = 'https://wa.me/$whatsappNumber';
@@ -227,7 +228,7 @@ Widget build(BuildContext context) {
                       text: 'Call',
                       color: Colors.blue,
                       onPressed: () {
-                        makeCall(shopData['phone'] ??
+                        makeCall(shopData['mobile'] ??
                             ''); // Replace with the actual phone number
                       },
                     ),
@@ -488,7 +489,7 @@ Widget _buildImageCarousel() {
     Color borderColor = Colors.black,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(left: 2, right: 2),
+      padding: const EdgeInsets.only(left: 1, right: 1),
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
@@ -502,14 +503,15 @@ Widget _buildImageCarousel() {
           children: [
             Image.asset(
               imagePath,
-              width: 24,
-              height: 24,
+              width: 22,
+              height: 22,
             ),
             const SizedBox(width: 6),
             Text(
+              
               text,
               style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.w500),
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.w500, fontSize: 12),
             ),
           ],
         ),
@@ -583,7 +585,7 @@ Widget _buildImageCarousel() {
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -595,16 +597,26 @@ Widget _buildImageCarousel() {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2.0),
             child: Container(
-              color: const Color.fromARGB(255, 254, 247, 204),
-              padding: const EdgeInsets.all(6.0),
+
+              padding: const EdgeInsets.only(left:6.0, right: 6, top: 2, bottom: 2),
               child: Text(
                 description,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 12,
-                  color: Colors.black,
+                  color: Color.fromARGB(255, 107, 160, 107),
                 ),
+              ),
+            ),
+          ),
+           Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              'MRP ₹$price',
+              style: const TextStyle(
+                fontSize: 12,
+                decoration: TextDecoration.lineThrough,
               ),
             ),
           ),
@@ -616,23 +628,14 @@ Widget _buildImageCarousel() {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Text(
               '₹$discountedprice',
-              style: const TextStyle(fontSize: 18),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
 
           const SizedBox(height: 2),
 
           // Original Price
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Text(
-              'MRP ₹$price',
-              style: const TextStyle(
-                fontSize: 12,
-                decoration: TextDecoration.lineThrough,
-              ),
-            ),
-          ),
+         
 
           // WhatsApp Order Button
           Padding(

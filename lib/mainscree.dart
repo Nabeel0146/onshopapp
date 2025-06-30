@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:onshopapp/Categories/shops.dart';
 import 'package:onshopapp/screens/Discount%20card/Discountcard.dart';
 import 'package:onshopapp/screens/Products/Productcategoriespage.dart';
-import 'package:onshopapp/screens/Products/Productspage.dart';
+import 'package:onshopapp/screens/Products/fridaybazaar.dart';
 import 'package:onshopapp/screens/homepage.dart';
 import 'package:onshopapp/screens/subcategory_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -22,13 +22,19 @@ class _MainScreenState extends State<MainScreen> {
     ProductCategoriesPage(), // Product Categories Page
     SubcategoryGridPage(collectionName: 'shopcategories'), // Shops Page
     DiscountCardPage(), // Discount Card Page
+    FridayBazaarSale(), // Friday Bazaar Sale Page
   ];
 
   void _onItemTapped(int index) {
+    print('Tapped index: $index'); // Debugging statement
     setState(() {
       _selectedIndex = index;
     });
-    _pageController.jumpToPage(index); // Update the PageView to the selected page
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.ease,
+    ); // Smooth transition to the selected page
   }
 
   @override
@@ -99,6 +105,7 @@ class _MainScreenState extends State<MainScreen> {
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {
+          print('Page changed to index: $index'); // Debugging statement
           setState(() {
             _selectedIndex = index;
           });
@@ -116,6 +123,8 @@ class _MainScreenState extends State<MainScreen> {
             Expanded(child: _buildNavItem('asset/online-shop.png', 'Shops', 2)),
             VerticalDivider(width: .5, color: const Color.fromARGB(255, 148, 148, 148), thickness: 0.5),
             Expanded(child: _buildNavItem('asset/credit-card.png', 'DiscountCard', 3)),
+            VerticalDivider(width: .5, color: const Color.fromARGB(255, 148, 148, 148), thickness: 0.5),
+            Expanded(child: _buildNavItem('asset/friday.png', 'Friday Bazaar', 4)),
           ],
         ),
       ),
@@ -135,14 +144,13 @@ class _MainScreenState extends State<MainScreen> {
               assetImage,
               width: 24,
               height: 24,
-              color: _selectedIndex == index ? Colors.black : const Color.fromARGB(255, 105, 105, 105),
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
                 color: _selectedIndex == index ? Colors.black : Color.fromARGB(255, 105, 105, 105),
-                fontSize: 12,
+                fontSize: 10,
               ),
             ),
           ],

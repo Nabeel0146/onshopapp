@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:onshopapp/mainscree.dart';
-import 'package:onshopapp/screens/homepage.dart';
+
 import 'package:onshopapp/screens/register.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -145,7 +145,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('asset/ssbackground.jpg'), // Replace with your background image asset path
+            image: AssetImage('asset/8880783.jpg'), // Replace with your background image asset path
             fit: BoxFit.fitHeight,
           ),
         ),

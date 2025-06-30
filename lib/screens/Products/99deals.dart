@@ -5,34 +5,27 @@ import 'package:flutter/material.dart';
 import 'package:onshopapp/screens/Products/singleproductpage.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class ProductsPage extends StatefulWidget {
-  final String category;
-
-  const ProductsPage({required this.category, Key? key}) : super(key: key);
+class NinetyNineDealsPage extends StatefulWidget {
+  const NinetyNineDealsPage({Key? key}) : super(key: key);
 
   @override
-  State<ProductsPage> createState() => _ProductsPageState();
+  _NinetyNineDealsPageState createState() => _NinetyNineDealsPageState();
 }
 
-class _ProductsPageState extends State<ProductsPage> {
-  late Future<void> _initializationFuture;
+class _NinetyNineDealsPageState extends State<NinetyNineDealsPage> {
+  late Future<List<Map<String, dynamic>>> _99DealsFuture;
 
   @override
   void initState() {
     super.initState();
-    _initializationFuture = _initializeData();
+    _99DealsFuture = _fetch99DealsItems();
   }
 
-  Future<void> _initializeData() async {
-    // Initialization logic if needed
-  }
-
-  Future<List<Map<String, dynamic>>> _fetchFilteredItems(
-      String category) async {
+  Future<List<Map<String, dynamic>>> _fetch99DealsItems() async {
     try {
       final querySnapshot = await FirebaseFirestore.instance
           .collection('products')
-          .where('category', isEqualTo: category)
+          .where('99deals', isEqualTo: true)
           .where('display', isEqualTo: true)
           .get();
 
@@ -40,7 +33,7 @@ class _ProductsPageState extends State<ProductsPage> {
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
     } catch (e) {
-      print('Error fetching items: $e');
+      print('Error fetching 99 Deals items: $e');
       return [];
     }
   }
@@ -95,92 +88,96 @@ class _ProductsPageState extends State<ProductsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent, // Transparent to allow gradient
-        toolbarHeight: 70,
-        elevation: 0, // Remove shadow if not needed
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Color.fromARGB(255, 255, 185, 41), // Yellow at the top
+                Color.fromARGB(255, 76, 175, 80), // Green at the top
                 Colors.white, // White at the bottom
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: Row(
-              children: [
-                const SizedBox(width: 45),
-                ClipRRect(
-                  child:
-                      Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'On Shop',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+        ),
+        centerTitle: true,
+        title: const Text(
+          '₹99 Deals',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
-      body: Container(
-        padding: EdgeInsets.only(top: 30, left: 10, right: 10),
-        child: FutureBuilder<void>(
-          future: _initializationFuture,
-          builder: (context, initializationSnapshot) {
-            if (initializationSnapshot.connectionState !=
-                ConnectionState.done) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            return FutureBuilder<List<Map<String, dynamic>>>(
-              future: _fetchFilteredItems(widget.category),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+      body: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _99DealsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
 
-                final items = snapshot.data ?? [];
+          final items = snapshot.data ?? [];
 
-                if (items.isEmpty) {
-                  return const Center(
-                    child: Text('No items found for this category.',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold)),
-                  );
-                }
+          if (items.isEmpty) {
+            return const Center(
+              child: Text(
+                'No items found for 99 Deals.',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            );
+          }
 
-                return SingleChildScrollView(
-                  padding: EdgeInsets.only(bottom: 30),
-                  child: GridView.builder(
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      '₹99 Deals',
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      'Get amazing good quality products on discount!',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color.fromARGB(255, 111, 111, 111),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 8,
                       mainAxisSpacing: 8,
-                      childAspectRatio:
-                          0.55, // Adjust this value to give more height to each grid item
+                      childAspectRatio: 0.55,
                     ),
                     itemCount: items.length,
                     itemBuilder: (context, index) {
@@ -190,20 +187,17 @@ class _ProductsPageState extends State<ProductsPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) =>
-                                  SingleProductPage(product: item),
+                              builder: (context) => SingleProductPage(product: item),
                             ),
                           );
                         },
                         child: Container(
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: Colors
-                                  .grey, // You can change the border color as needed
-                              width: 0.5, // Set the border width to 0.5
+                              color: Colors.grey,
+                              width: 0.5,
                             ),
-                            borderRadius: BorderRadius.circular(
-                                8), // Optional: Add rounded corners
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Card(
                             elevation: 0,
@@ -215,8 +209,7 @@ class _ProductsPageState extends State<ProductsPage> {
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
                                     children: [
                                       if (item['image_url'] != null &&
                                           item['image_url'].toString().isNotEmpty)
@@ -227,17 +220,13 @@ class _ProductsPageState extends State<ProductsPage> {
                                             child: CachedNetworkImage(
                                               imageUrl: item['image_url'],
                                               fit: BoxFit.cover,
-                                              placeholder: (context, url) =>
-                                                  Container(
+                                              placeholder: (context, url) => Container(
                                                 color: Colors.grey[300],
                                                 child: const Center(
-                                                  child:
-                                                      CircularProgressIndicator(),
+                                                  child: CircularProgressIndicator(),
                                                 ),
                                               ),
-                                              errorWidget:
-                                                  (context, url, error) =>
-                                                  Container(
+                                              errorWidget: (context, url, error) => Container(
                                                 color: Colors.grey[300],
                                                 child: const Icon(Icons.error),
                                               ),
@@ -249,14 +238,12 @@ class _ProductsPageState extends State<ProductsPage> {
                                           aspectRatio: 3 / 3,
                                           child: Container(
                                             color: Colors.grey[300],
-                                            child: const Icon(
-                                                Icons.image_not_supported),
+                                            child: const Icon(Icons.image_not_supported),
                                           ),
                                         ),
                                       const SizedBox(height: 8),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8.0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                         child: Text(
                                           item['name'] ?? 'No Name',
                                           overflow: TextOverflow.ellipsis,
@@ -268,56 +255,46 @@ class _ProductsPageState extends State<ProductsPage> {
                                         ),
                                       ),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 2.0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 2.0),
                                         child: Container(
-                                          padding: const EdgeInsets.only(
-                                              left: 6.0,
-                                              right: 6,
-                                              top: 2,
-                                              bottom: 2),
+                                          padding: const EdgeInsets.only(left: 6.0, right: 6, top: 2, bottom: 2),
                                           child: Text(
-                                            item['description'] ??
-                                                'No Description',
+                                            item['description'] ?? 'No Description',
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
                                               fontSize: 14,
-                                              color: Color.fromARGB(
-                                                  255, 107, 160, 107),
+                                              color: Color.fromARGB(255, 107, 160, 107),
                                             ),
                                           ),
                                         ),
                                       ),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8.0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                         child: Text(
                                           'MRP ₹${item['price'] ?? 'N/A'}',
                                           style: const TextStyle(
                                             fontSize: 12,
-                                            decoration:
-                                                TextDecoration.lineThrough,
+                                            decoration: TextDecoration.lineThrough,
                                           ),
                                         ),
                                       ),
                                       const SizedBox(height: 1),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8.0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                         child: Text(
                                           '₹${item['discountedprice'] ?? 'N/A'}',
                                           style: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold),
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 1.0, vertical: 2.0),
+                                  padding: const EdgeInsets.symmetric(horizontal: 1.0, vertical: 2.0),
                                   child: ElevatedButton(
                                     onPressed: () {
                                       if (item['whatsappnumber'] != null) {
@@ -337,8 +314,7 @@ class _ProductsPageState extends State<ProductsPage> {
                                       ),
                                     ),
                                     child: Row(
-                                      mainAxisSize: MainAxisSize
-                                          .min, // Wrap content tightly
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Image.asset(
                                           'asset/whatsapp.png',
@@ -364,11 +340,11 @@ class _ProductsPageState extends State<ProductsPage> {
                       );
                     },
                   ),
-                );
-              },
-            );
-          },
-        ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:in_app_update/in_app_update.dart';
+import 'package:onshopapp/screens/Products/99deals.dart';
 import 'package:onshopapp/screens/Products/Productspage.dart';
 import 'package:onshopapp/screens/Products/singleproductpage.dart';
 import 'package:onshopapp/screens/searchresults.dart';
@@ -286,9 +287,28 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.only(left: 10.0, right: 10),
               child: _buildOtherCategories(),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 30),
             _buildAdsSection(),
             const SizedBox(height: 10),
+             Padding(
+               padding: const EdgeInsets.all(8.0),
+               child: GestureDetector(
+                          onTap: () {
+                            // Navigate to 99deals page
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => NinetyNineDealsPage()));
+                          },
+                          child: Image.asset(
+                            'asset/99deals.png', // Replace with your actual image path
+                            width:
+                                double.infinity, // Make the image take full width
+                            // Adjust the height as needed
+                            fit: BoxFit.fitHeight,
+                          ),
+                        ),
+             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: _buildProductsSection(),
@@ -702,9 +722,14 @@ class _HomePageState extends State<HomePage> {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Text(
-                "Featured Products",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              child: Column(
+                children: [
+                  Text(
+                    "Featured Products",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Divider()
+                ],
               ),
             ),
             GridView.builder(

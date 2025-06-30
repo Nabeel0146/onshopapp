@@ -548,11 +548,12 @@ class _ListingPageState extends State<hosListingPage> {
                                                                         'mobile']);
                                                               } else {
                                                                 ScaffoldMessenger.of(
+                                                                  
                                                                         context)
                                                                     .showSnackBar(
                                                                   const SnackBar(
                                                                       content: Text(
-                                                                          'Unable to share. Missing item details.')),
+                                                                          'Unable to share. Missing item details..')),
                                                                 );
                                                               }
                                                             },

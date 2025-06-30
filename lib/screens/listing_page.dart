@@ -400,251 +400,215 @@ class _ListingPageState extends State<ListingPage> {
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.only(
-                    top: 4, left: 4, right: 4, bottom: 60),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  print('Document ID: ${item['documentId']}'); // 👈 Here
-                  return GestureDetector(
-                    onTap: () {
-                      _checkCustomerID(item);
-                    },
-                    child: Stack(
-                      children: [
-                        Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(
-                              color: Colors.grey[400]!, // Border color
-                              width: 1.0, // Border width
-                            ),
-                          ),
-                          color: const Color.fromARGB(255, 255, 255, 255),
-                          elevation: 2,
-                          shadowColor: Colors.grey.withOpacity(0.8),
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 8),
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 14.0, right: 14, bottom: 14, top: 22),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    if (item['image_url'] != null &&
-                                        item['image_url'].toString().isNotEmpty)
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            CachedNetworkImage(
-                                              imageUrl: item['image_url'],
-                                              width: 80,
-                                              height: 80,
-                                              fit: BoxFit.cover,
-                                              placeholder: (context, url) =>
-                                                  Container(
-                                                width: 80,
-                                                height: 80,
-                                                color: const Color.fromARGB(
-                                                    255,
-                                                    235,
-                                                    235,
-                                                    235), // Placeholder background
-                                                child: const Center(
-                                                  child: SizedBox(
-                                                    width: 16, // Smaller size
-                                                    height: 16, // Smaller size
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                      strokeWidth:
-                                                          2, // Thinner stroke
-                                                      valueColor:
-                                                          AlwaysStoppedAnimation<
-                                                                  Color>(
-                                                              Colors
-                                                                  .black), // Black color
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                              errorWidget:
-                                                  (context, url, error) =>
-                                                      Container(
-                                                width: 80,
-                                                height: 80,
-                                                color: Colors.grey[300],
-                                                child: const Icon(Icons.error,
-                                                    color: Colors.red),
-                                              ),
-                                            ),
-                                          ],
+  padding: const EdgeInsets.only(top: 4, left: 4, right: 4, bottom: 60),
+  itemCount: items.length,
+  itemBuilder: (context, index) {
+    final item = items[index];
+    print('Document ID: ${item['documentId']}'); // 👈 Here
+    return GestureDetector(
+      onTap: () {
+        _checkCustomerID(item);
+      },
+      child: Stack(
+        children: [
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color: Colors.grey[400]!, // Border color
+                width: 1.0, // Border width
+              ),
+            ),
+            color: const Color.fromARGB(255, 255, 255, 255),
+            elevation: 2,
+            shadowColor: Colors.grey.withOpacity(0.8),
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 14.0, right: 14, bottom: 14, top: 22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      if (item['image_url'] != null && item['image_url'].toString().isNotEmpty)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              CachedNetworkImage(
+                                imageUrl: item['image_url'],
+                                width: 80,
+                                height: 80,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) =>
+                                    Container(
+                                      width: 80,
+                                      height: 80,
+                                      color: const Color.fromARGB(255, 235, 235, 235), // Placeholder background
+                                      child: const Center(
+                                        child: SizedBox(
+                                          width: 16, // Smaller size
+                                          height: 16, // Smaller size
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2, // Thinner stroke
+                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.black), // Black color
+                                          ),
                                         ),
-                                      )
-                                    else
-                                      Container(
-                                        width: 80,
-                                        height: 80,
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey[300],
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        child: const Icon(
-                                            Icons.image_not_supported,
-                                            size: 30),
-                                      ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(item['name'] ?? 'No Name',
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold)),
-                                          if (item['description'] != null)
-                                            Text(item['description'],
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(
-                                                    fontSize: 12)),
-                                          if (item['mobile'] != null)
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                    'Mobile: ${item['mobile']}',
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: const TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 12)),
-                                                Row(
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.end,
-                                                      children: [
-                                                        if (item['mobile'] !=
-                                                            null)
-                                                          GestureDetector(
-                                                              onTap: () {
-                                                                makeCall(item[
-                                                                    'mobile']);
-                                                              },
-                                                              child:
-                                                                  Image.asset(
-                                                                "asset/phone-call.png",
-                                                                width: 20,
-                                                              )),
-                                                        const SizedBox(
-                                                            width: 10),
-                                                        if (item['whatsapp'] !=
-                                                                null &&
-                                                            item['whatsapp']
-                                                                .isNotEmpty)
-                                                          GestureDetector(
-                                                            onTap: () {
-                                                              openWhatsApp(
-                                                                  context,
-                                                                  item[
-                                                                      'whatsapp']);
-                                                            },
-                                                            child: Image.asset(
-                                                                "asset/whatsapp2.png",
-                                                                width: 20),
-                                                          ),
-                                                        const SizedBox(
-                                                            width: 10),
-                                                        GestureDetector(
-                                                            onTap: () {
-                                                              if (item['name'] != null &&
-                                                                  item['description'] !=
-                                                                      null &&
-                                                                  item['mobile'] !=
-                                                                      null) {
-                                                                shareDetails(
-                                                                    item[
-                                                                        'name'],
-                                                                    item[
-                                                                        'description'],
-                                                                    item[
-                                                                        'mobile']);
-                                                              } else {
-                                                                ScaffoldMessenger.of(
-                                                                        context)
-                                                                    .showSnackBar(
-                                                                  const SnackBar(
-                                                                      content: Text(
-                                                                          'Unable to share. Missing item details.')),
-                                                                );
-                                                              }
-                                                            },
-                                                            child: Image.asset(
-                                                              "asset/share2.png",
-                                                              width: 20,
-                                                            )),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                )
-                                              ],
-                                            ),
-                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        if (item['associate'] == true)
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 1),
-                              decoration: const BoxDecoration(
-                                color: Colors.green,
-                                borderRadius: BorderRadius.only(
-                                    topRight: Radius.circular(5)),
+                                errorWidget: (context, url, error) =>
+                                    Container(
+                                      width: 80,
+                                      height: 80,
+                                      color: Colors.grey[300],
+                                      child: const Icon(Icons.error, color: Colors.red),
+                                    ),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
+                            ],
+                          ),
+                        )
+                      else
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.image_not_supported, size: 30),
+                        ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (item['shopcode'] != null && item['shopcode'].toString().isNotEmpty)
+                              Text(
+                                'Shop Code: ${item['shopcode']}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green,
+                                ),
+                              ),
+                            Text(
+                              item['name'] ?? 'No Name',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (item['description'] != null)
+                              Text(
+                                item['description'],
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            if (item['mobile'] != null)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Icon(Icons.check,
-                                      color: Colors.white, size: 16),
-                                  const SizedBox(width: 4),
                                   Text(
-                                    item['approvetext'] == true
-                                        ? 'Verified'
-                                        : 'Discount Card Accepted',
+                                    'Mobile: ${item['mobile']}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold),
+                                      color: Colors.black,
+                                      fontSize: 12,
+                                    ),
                                   ),
+                                  Row(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          if (item['mobile'] != null)
+                                            GestureDetector(
+                                              onTap: () {
+                                                makeCall(item['mobile']);
+                                              },
+                                              child: Image.asset(
+                                                "asset/phone-call.png",
+                                                width: 20,
+                                              ),
+                                            ),
+                                          const SizedBox(width: 10),
+                                          if (item['whatsapp'] != null && item['whatsapp'].isNotEmpty)
+                                            GestureDetector(
+                                              onTap: () {
+                                                openWhatsApp(context, item['whatsapp']);
+                                              },
+                                              child: Image.asset(
+                                                "asset/whatsapp2.png",
+                                                width: 20,
+                                              ),
+                                            ),
+                                          const SizedBox(width: 10),
+                                          GestureDetector(
+                                            onTap: () {
+                                              if (item['name'] != null && item['description'] != null && item['mobile'] != null) {
+                                                shareDetails(item['name'], item['description'], item['mobile']);
+                                              } else {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(content: Text('Unable to share. Missing item details.')),
+                                                );
+                                              }
+                                            },
+                                            child: Image.asset(
+                                              "asset/share2.png",
+                                              width: 20,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  )
                                 ],
                               ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  );
-                },
-              );
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (item['associate'] == true)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: const BoxDecoration(
+                  color: Colors.green,
+                  borderRadius: BorderRadius.only(topRight: Radius.circular(5)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (item['approvetext'] == true)
+                      const Icon(Icons.check, color: Colors.white, size: 16),
+                    if (item['approvetext'] == false || item['approvetext'] == null)
+                      Row(
+                        children: [
+                          const Icon(Icons.check, color: Colors.white, size: 16),
+                          const Icon(Icons.check, color: Colors.white, size: 16),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  },
+);
             },
           );
         },

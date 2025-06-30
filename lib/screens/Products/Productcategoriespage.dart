@@ -188,7 +188,7 @@ class ProductCategoriesPage extends StatelessWidget {
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8.0),
-                              color: const Color.fromARGB(255, 255, 247, 229),
+                              
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -196,8 +196,8 @@ class ProductCategoriesPage extends StatelessWidget {
                                 imageUrl != null && imageUrl.isNotEmpty
                                     ? CachedNetworkImage(
                                         imageUrl: imageUrl,
-                                        width: 64,
-                                        height: 64,
+                                        width: 84,
+                                        height: 90,
                                         fit: BoxFit.cover,
                                         placeholder: (context, url) => Shimmer.fromColors(
                                           baseColor: Colors.grey[200]!,
@@ -222,11 +222,11 @@ class ProductCategoriesPage extends StatelessWidget {
                                       )
                                     : const Icon(Icons.category, size: 64),
                                 const SizedBox(height: 8.0),
-                                Text(
-                                  name ?? 'Category',
-                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                                  textAlign: TextAlign.center,
-                                ),
+                                // Text(
+                                //   name ?? 'Category',
+                                //   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                                //   textAlign: TextAlign.center,
+                                // ),
                               ],
                             ),
                           ),

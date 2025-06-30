@@ -154,7 +154,7 @@ class _JobsListingPageState extends State<JobsListingPage> {
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Color.fromARGB(255, 255, 185, 41), // Yellow at the top
+                const Color.fromARGB(255, 41, 219, 255), // Orange
                 Colors.white, // White at the bottom
               ],
               begin: Alignment.topCenter,

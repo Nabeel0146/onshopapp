@@ -113,19 +113,22 @@ class _MainScreenState extends State<MainScreen> {
         children: _pages,
       ),
       bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Expanded(child: _buildNavItem('asset/home.png', 'Home', 0)),
-            VerticalDivider(width: .5, color: const Color.fromARGB(255, 148, 148, 148), thickness: 0.5),
-            Expanded(child: _buildNavItem('asset/grocery.png', 'Categories', 1)),
-            VerticalDivider(width: .5, color: const Color.fromARGB(255, 148, 148, 148), thickness: 0.5),
-            Expanded(child: _buildNavItem('asset/online-shop.png', 'Shops', 2)),
-            VerticalDivider(width: .5, color: const Color.fromARGB(255, 148, 148, 148), thickness: 0.5),
-            Expanded(child: _buildNavItem('asset/credit-card.png', 'DiscountCard', 3)),
-            VerticalDivider(width: .5, color: const Color.fromARGB(255, 148, 148, 148), thickness: 0.5),
-            Expanded(child: _buildNavItem('asset/friday.png', 'Friday Bazaar', 4)),
-          ],
+        color: Colors.white,
+        child: Container(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Expanded(child: _buildNavItem('asset/home5.png', 'Home', 0)),
+              VerticalDivider(width: .5, color: const Color.fromARGB(255, 148, 148, 148), thickness: 0.5),
+              Expanded(child: _buildNavItem('asset/productcategories.png', 'Categories', 1)),
+              VerticalDivider(width: .5, color: const Color.fromARGB(255, 148, 148, 148), thickness: 0.5),
+              Expanded(child: _buildNavItem('asset/shopicon.png', 'Shops', 2)),
+              VerticalDivider(width: .5, color: const Color.fromARGB(255, 148, 148, 148), thickness: 0.5),
+              Expanded(child: _buildNavItem('asset/card.jpg', 'DiscountCard', 3)),
+              VerticalDivider(width: .5, color: const Color.fromARGB(255, 148, 148, 148), thickness: 0.5),
+              Expanded(child: _buildNavItem('asset/friday.png', 'Friday Bazaar', 4)),
+            ],
+          ),
         ),
       ),
     );

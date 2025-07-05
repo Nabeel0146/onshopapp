@@ -149,7 +149,7 @@ Widget build(BuildContext context) {
                   children: [
                     const SizedBox(width: 45),
                     ClipRRect(
-                      child: Image.asset("asset/onshopnewcurvedlogo.png",
+                      child: Image.asset("asset/onshopoldroundedlogo.png",
                           width: 50),
                     ),
                     const SizedBox(width: 10),

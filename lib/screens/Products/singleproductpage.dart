@@ -45,7 +45,13 @@ class _SingleProductPageState extends State<SingleProductPage> {
     }
   }
 
-  Future<void> _openWhatsApp(BuildContext context, String phoneNumber, String productName, int price, int discountedPrice, String description) async {
+  Future<void> _openWhatsApp(
+      BuildContext context,
+      String phoneNumber,
+      String productName,
+      int price,
+      int discountedPrice,
+      String description) async {
     final userAddress = await getUserAddress();
     final formattedPhoneNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
     final productDetails = """
@@ -56,7 +62,8 @@ class _SingleProductPageState extends State<SingleProductPage> {
     Address: $userAddress
     """;
 
-    final uri = Uri.parse('https://wa.me/$formattedPhoneNumber?text=${Uri.encodeComponent(productDetails)}');
+    final uri = Uri.parse(
+        'https://wa.me/$formattedPhoneNumber?text=${Uri.encodeComponent(productDetails)}');
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -75,7 +82,8 @@ class _SingleProductPageState extends State<SingleProductPage> {
           child: InteractiveViewer(
             child: CachedNetworkImage(
               imageUrl: imageUrl,
-              placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+              placeholder: (context, url) =>
+                  Center(child: CircularProgressIndicator()),
               errorWidget: (context, url, error) => Icon(Icons.error),
               fit: BoxFit.cover,
             ),
@@ -109,7 +117,8 @@ class _SingleProductPageState extends State<SingleProductPage> {
               children: [
                 const SizedBox(width: 45),
                 ClipRRect(
-                  child: Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
+                  child:
+                      Image.asset("asset/onshopoldroundedlogo.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -135,6 +144,7 @@ class _SingleProductPageState extends State<SingleProductPage> {
       ),
       body: SingleChildScrollView(
         child: Column(
+          
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Main Product Image
@@ -142,7 +152,8 @@ class _SingleProductPageState extends State<SingleProductPage> {
               onTap: () => _showLargeImage(context, currentMainImage),
               child: CachedNetworkImage(
                 imageUrl: currentMainImage,
-                placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                placeholder: (context, url) =>
+                    Center(child: CircularProgressIndicator()),
                 errorWidget: (context, url, error) => Icon(Icons.error),
                 fit: BoxFit.fitHeight,
                 width: double.infinity,
@@ -182,13 +193,22 @@ class _SingleProductPageState extends State<SingleProductPage> {
                 children: [
                   Text(
                     'MRP ₹${widget.product['price'] ?? 'N/A'}',
-                    style: TextStyle(fontSize: 18, decoration: TextDecoration.lineThrough, color: Color.fromARGB(255, 206, 32, 20)),
+                    style: TextStyle(
+                        fontSize: 18,
+                        decoration: TextDecoration.lineThrough,
+                        color: Color.fromARGB(255, 206, 32, 20)),
                   ),
                   const SizedBox(width: 10),
-                  Text("Discounted Price: ", style: TextStyle(fontSize: 14),),
+                  Text(
+                    "Discounted Price: ",
+                    style: TextStyle(fontSize: 14),
+                  ),
                   Text(
                     '₹${widget.product['discountedprice'] ?? 'N/A'}',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green),
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green),
                   ),
                 ],
               ),
@@ -243,14 +263,41 @@ class _SingleProductPageState extends State<SingleProductPage> {
             const SizedBox(height: 20),
 
             // Additional Details
-            if (widget.product.containsKey('details') && widget.product['details'] != null)
+            if (widget.product.containsKey('details') &&
+                widget.product['details'] != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  widget.product['details'],
-                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16), // Rounded corners
+                  ),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.all(16), // Padding inside the card
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Details", // Heading
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(
+                            height: 8), // Spacing between heading and text
+                        Text(
+                          widget.product['details'], // Product details
+                          style:
+                              TextStyle(fontSize: 15, color: Colors.grey[900]),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
+              SizedBox(height: 20,)
           ],
         ),
       ),
@@ -275,7 +322,8 @@ class _SingleProductPageState extends State<SingleProductPage> {
         crossAxisCount: 4,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
-        childAspectRatio: 1, // Adjust this value to change the aspect ratio of the images
+        childAspectRatio:
+            1, // Adjust this value to change the aspect ratio of the images
       ),
       itemCount: additionalImages.length,
       itemBuilder: (context, index) {
@@ -289,7 +337,8 @@ class _SingleProductPageState extends State<SingleProductPage> {
             borderRadius: BorderRadius.circular(8), // Rounded corners
             child: CachedNetworkImage(
               imageUrl: additionalImages[index],
-              placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+              placeholder: (context, url) =>
+                  Center(child: CircularProgressIndicator()),
               errorWidget: (context, url, error) => Icon(Icons.error),
               fit: BoxFit.cover,
             ),

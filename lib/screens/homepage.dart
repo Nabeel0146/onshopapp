@@ -241,7 +241,7 @@ class _HomePageState extends State<HomePage> {
       final items = snapshot.data ?? [];
 
       // Check if today is Friday
-      final isFriday = DateTime.now().weekday == DateTime.monday;
+      final isFriday = DateTime.now().weekday == DateTime.friday;
 
       if (!isFriday || items.isEmpty) {
         return const Center(
@@ -557,23 +557,14 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSearchButton(),
-            const SizedBox(height: 10),
 
+             
             buildBanner(bannerImages),
             const SizedBox(height: 26),
             _buildProductCategories(), // New section for scrollable rectangles
-            const SizedBox(height: 26),
-            _buildCategoryTiles(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 2),
             Padding(
-              padding: const EdgeInsets.only(left: 10.0, right: 10),
-              child: _buildOtherCategories(),
-            ),
-            const SizedBox(height: 30),
-            _buildAdsSection(),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.only(left:8.0, right: 8, bottom: 20),
               child: GestureDetector(
                 onTap: () {
                   // Navigate to 99deals page
@@ -590,6 +581,17 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+
+            _buildCategoryTiles(),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.only(left: 10.0, right: 10),
+              child: _buildOtherCategories(),
+            ),
+            const SizedBox(height: 30),
+            _buildAdsSection(),
+            const SizedBox(height: 10),
+           
             _buildFridayBazaarSection(), // Add the Friday Bazaar section here
             const SizedBox(height: 10),
             Padding(
@@ -808,7 +810,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildSearchButton() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
       child: ElevatedButton(
         onPressed: _navigateToSearchResults,
         style: ElevatedButton.styleFrom(
@@ -849,7 +851,7 @@ class _HomePageState extends State<HomePage> {
               context,
               'Shops',
               'Find Product Stores',
-              'asset/onshoplogofinal.png',
+              'asset/onshopoldlogo.png',
               Colors.red,
               'shopcategories',
             ),

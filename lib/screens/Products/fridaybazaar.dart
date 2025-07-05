@@ -116,7 +116,7 @@ Widget build(BuildContext context) {
             children: [
               const SizedBox(width: 15),
               ClipRRect(
-                child: Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
+                child: Image.asset("asset/onshopoldroundedlogo.png", width: 50),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -164,7 +164,7 @@ Widget build(BuildContext context) {
                 final items = snapshot.data ?? [];
 
                 // Check if today is Friday
-                final isFriday = DateTime.now().weekday == DateTime.monday;
+                final isFriday = DateTime.now().weekday == DateTime.friday;
 
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,

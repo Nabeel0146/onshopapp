@@ -75,7 +75,7 @@ class _DiscountCardPageState extends State<DiscountCardPage>
                 const SizedBox(width: 15),
                 ClipRRect(
                   child:
-                      Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
+                      Image.asset("asset/onshopoldroundedlogo.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(

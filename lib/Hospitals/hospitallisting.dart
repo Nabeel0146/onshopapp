@@ -246,7 +246,7 @@ class _ListingPageState extends State<hosListingPage> {
                 const SizedBox(width: 45),
                 ClipRRect(
                   child:
-                      Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
+                      Image.asset("asset/citydotcomfinallogopCURVED.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -279,15 +279,16 @@ class _ListingPageState extends State<hosListingPage> {
         child: DropdownSearch<String>(
           items: ['All City']..addAll(cities)..sort(), // Add 'All City' and sort
           selectedItem: selectedCity,
-          popupProps: PopupProps.menu(
-            showSearchBox: true, // Enable search functionality
-            searchFieldProps: TextFieldProps(
-              decoration: InputDecoration(
-                hintText: "Search city...",
-                border: OutlineInputBorder(),
-              ),
+         popupProps: PopupProps.menu(
+          showSearchBox: true, // Enable search functionality
+          searchFieldProps: TextFieldProps(
+            decoration: InputDecoration(
+              hintText: "Search city...",
+              border: OutlineInputBorder(),
             ),
           ),
+          constraints: BoxConstraints(maxHeight: 700), // Set the maximum height of the dropdown list
+        ),
           dropdownButtonProps: const DropdownButtonProps(
             icon: Icon(Icons.arrow_drop_down, color: Colors.black),
           ),

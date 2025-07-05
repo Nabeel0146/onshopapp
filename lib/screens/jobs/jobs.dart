@@ -167,7 +167,7 @@ class _JobsListingPageState extends State<JobsListingPage> {
               children: [
                 const SizedBox(width: 45),
                 ClipRRect(
-                  child: Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
+                  child: Image.asset("asset/citydotcomfinallogopsdfinall.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(

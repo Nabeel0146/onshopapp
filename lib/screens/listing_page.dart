@@ -277,7 +277,7 @@ class _ListingPageState extends State<ListingPage> {
                 const SizedBox(width: 45),
                 ClipRRect(
                   child:
-                      Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
+                      Image.asset("asset/onshopoldroundedlogo.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -297,75 +297,72 @@ class _ListingPageState extends State<ListingPage> {
                   ),
                 ),
                 if (cities.isNotEmpty)
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on,
-                        color: Colors.black,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 1),
-                      SizedBox(
-                        width: 150, // Adjust width as needed
-                        child: DropdownSearch<String>(
-                          items: ['All City']
-                            ..addAll(cities)
-                            ..sort(), // Add 'All City' and sort
-                          selectedItem: selectedCity,
-                          popupProps: PopupProps.menu(
-                            showSearchBox: true, // Enable search functionality
-                            searchFieldProps: TextFieldProps(
-                              decoration: InputDecoration(
-                                hintText: "Search city...",
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                          ),
-                          dropdownButtonProps: const DropdownButtonProps(
-                            icon: Icon(Icons.arrow_drop_down,
-                                color: Colors.black),
-                          ),
-                          dropdownDecoratorProps: DropDownDecoratorProps(
-                            baseStyle: TextStyle(color: Colors.black),
-                            dropdownSearchDecoration: InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 5),
-                              border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
-                                borderSide: BorderSide.none,
-                              ),
-                              filled: true,
-                              fillColor: Colors.transparent,
-                            ),
-                          ),
-                          onChanged: (newValue) {
-                            setState(() {
-                              selectedCity = newValue;
-                            });
+                 Row(
+  children: [
+    const Icon(
+      Icons.location_on,
+      color: Colors.black,
+      size: 16,
+    ),
+    const SizedBox(width: 1),
+    SizedBox(
+      width: 150, // Adjust width as needed
+      child: DropdownSearch<String>(
+        items: ['All City']
+          ..addAll(cities)
+          ..sort(), // Add 'All City' and sort
+        selectedItem: selectedCity,
+        popupProps: PopupProps.menu(
+          showSearchBox: true, // Enable search functionality
+          searchFieldProps: TextFieldProps(
+            decoration: InputDecoration(
+              hintText: "Search city...",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          constraints: BoxConstraints(maxHeight: 700), // Set the maximum height of the dropdown list
+        ),
+        dropdownButtonProps: const DropdownButtonProps(
+          icon: Icon(Icons.arrow_drop_down, color: Colors.black),
+        ),
+        dropdownDecoratorProps: DropDownDecoratorProps(
+          baseStyle: TextStyle(color: Colors.black),
+          dropdownSearchDecoration: InputDecoration(
+            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              borderSide: BorderSide.none,
+            ),
+            filled: true,
+            fillColor: Colors.transparent,
+          ),
+        ),
+        onChanged: (newValue) {
+          setState(() {
+            selectedCity = newValue;
+          });
 
-                            if (newValue != null) {
-                              SharedPreferences.getInstance().then((prefs) {
-                                prefs.setString('selectedCity', newValue);
-                              });
-                            }
+          if (newValue != null) {
+            SharedPreferences.getInstance().then((prefs) {
+              prefs.setString('selectedCity', newValue);
+            });
+          }
 
-                            // Fetch offers for the new city
-                            setState(
-                                () {}); // Ensure this method is called to reload the page
-                          },
-                          // Ensure the selected city text is on a single line
-                          dropdownBuilder: (context, selectedItem) {
-                            return Text(
-                              selectedItem ?? 'Select City',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: Colors.black),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+          // Fetch offers for the new city
+          setState(() {}); // Ensure this method is called to reload the page
+        },
+        // Ensure the selected city text is on a single line
+        dropdownBuilder: (context, selectedItem) {
+          return Text(
+            selectedItem ?? 'Select City',
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: Colors.black),
+          );
+        },
+      ),
+    ),
+  ],
+),
                 const SizedBox(width: 10),
               ],
             ),

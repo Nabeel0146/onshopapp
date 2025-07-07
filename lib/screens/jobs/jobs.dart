@@ -6,7 +6,7 @@ import 'package:onshopapp/screens/jobs/addjobs.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:share_plus/share_plus.dart'; // Import share_plus package
+
 
 class JobsListingPage extends StatefulWidget {
   @override
@@ -134,13 +134,13 @@ class _JobsListingPageState extends State<JobsListingPage> {
     Shared from OnShop App Jobs
     """;
 
-    try {
-      // Use share_plus to share the job details
-      Share.share(shareText);
-      print('Sharing job details successful');
-    } catch (e) {
-      print('Error while sharing job details: $e');
-    }
+    // try {
+    //   // Use share_plus to share the job details
+    //   Share.share(shareText);
+    //   print('Sharing job details successful');
+    // } catch (e) {
+    //   print('Error while sharing job details: $e');
+    // }
   }
 
   @override
@@ -167,7 +167,7 @@ class _JobsListingPageState extends State<JobsListingPage> {
               children: [
                 const SizedBox(width: 45),
                 ClipRRect(
-                  child: Image.asset("asset/citydotcomfinallogopsdfinall.png", width: 50),
+                  child: Image.asset("asset/citylogoapp.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -176,7 +176,7 @@ class _JobsListingPageState extends State<JobsListingPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
                       Text(
-                        'On Shop',
+                        'City dot com',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 18,

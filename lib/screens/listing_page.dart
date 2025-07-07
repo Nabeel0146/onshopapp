@@ -12,8 +12,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ListingPage extends StatefulWidget {
   final String subcategory;
+  final String collectionName; // Add this line
 
-  const ListingPage({required this.subcategory, Key? key}) : super(key: key);
+  const ListingPage(
+      {required this.subcategory, required this.collectionName, Key? key})
+      : super(key: key);
 
   @override
   State<ListingPage> createState() => _ListingPageState();
@@ -253,367 +256,382 @@ class _ListingPageState extends State<ListingPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent, // Transparent to allow gradient
-        toolbarHeight: 70,
-        elevation: 0, // Remove shadow if not needed
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.fromARGB(255, 255, 185, 41), // Yellow at the top
-                Colors.white, // White at the bottom
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: Row(
-              children: [
-                const SizedBox(width: 45),
-                ClipRRect(
-                  child:
-                      Image.asset("asset/onshopoldroundedlogo.png", width: 50),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        'On Shop',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                if (cities.isNotEmpty)
-                 Row(
-  children: [
-    const Icon(
-      Icons.location_on,
-      color: Colors.black,
-      size: 16,
-    ),
-    const SizedBox(width: 1),
-    SizedBox(
-      width: 150, // Adjust width as needed
-      child: DropdownSearch<String>(
-        items: ['All City']
-          ..addAll(cities)
-          ..sort(), // Add 'All City' and sort
-        selectedItem: selectedCity,
-        popupProps: PopupProps.menu(
-          showSearchBox: true, // Enable search functionality
-          searchFieldProps: TextFieldProps(
-            decoration: InputDecoration(
-              hintText: "Search city...",
-              border: OutlineInputBorder(),
-            ),
-          ),
-          constraints: BoxConstraints(maxHeight: 700), // Set the maximum height of the dropdown list
-        ),
-        dropdownButtonProps: const DropdownButtonProps(
-          icon: Icon(Icons.arrow_drop_down, color: Colors.black),
-        ),
-        dropdownDecoratorProps: DropDownDecoratorProps(
-          baseStyle: TextStyle(color: Colors.black),
-          dropdownSearchDecoration: InputDecoration(
-            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-              borderSide: BorderSide.none,
-            ),
-            filled: true,
-            fillColor: Colors.transparent,
+Widget build(BuildContext context) {
+  List<Color> appBarGradientColors;
+  String appBarIconAsset;
+  String appBarTitle;
+
+  if (widget.collectionName == 'workerscategories' || widget.collectionName == 'taxicategories') {
+    appBarGradientColors = [
+      const Color.fromARGB(255, 41, 219, 255),
+      Colors.white,
+    ];
+    appBarIconAsset = "asset/citylogo copy.png";
+    appBarTitle = 'City dot com';
+  } else {
+    appBarGradientColors = [
+      const Color.fromARGB(255, 255, 185, 41),
+      Colors.white,
+    ];
+    appBarIconAsset = "asset/onshopoldroundedlogo.png";
+    appBarTitle = 'On Shop';
+  }
+
+  return Scaffold(
+    appBar: AppBar(
+      backgroundColor: Colors.transparent, // Transparent to allow gradient
+      toolbarHeight: 70,
+      elevation: 0, // Remove shadow if not needed
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: appBarGradientColors,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
-        onChanged: (newValue) {
-          setState(() {
-            selectedCity = newValue;
-          });
-
-          if (newValue != null) {
-            SharedPreferences.getInstance().then((prefs) {
-              prefs.setString('selectedCity', newValue);
-            });
-          }
-
-          // Fetch offers for the new city
-          setState(() {}); // Ensure this method is called to reload the page
-        },
-        // Ensure the selected city text is on a single line
-        dropdownBuilder: (context, selectedItem) {
-          return Text(
-            selectedItem ?? 'Select City',
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: Colors.black),
-          );
-        },
-      ),
-    ),
-  ],
-),
-                const SizedBox(width: 10),
-              ],
-            ),
-          ),
-        ),
-      ),
-      body: FutureBuilder<void>(
-        future: _initializationFuture,
-        builder: (context, initializationSnapshot) {
-          if (initializationSnapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return FutureBuilder<List<Map<String, dynamic>>>(
-            future: _fetchFilteredItems(widget.subcategory, selectedCity),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              }
-
-              final items = snapshot.data ?? [];
-
-              if (items.isEmpty) {
-                return const Center(
-                  child: Text('No items found for this category.',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                );
-              }
-
-              return ListView.builder(
-  padding: const EdgeInsets.only(top: 4, left: 4, right: 4, bottom: 60),
-  itemCount: items.length,
-  itemBuilder: (context, index) {
-    final item = items[index];
-    print('Document ID: ${item['documentId']}'); // 👈 Here
-    return GestureDetector(
-      onTap: () {
-        _checkCustomerID(item);
-      },
-      child: Stack(
-        children: [
-          Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(
-                color: Colors.grey[400]!, // Border color
-                width: 1.0, // Border width
+        child: Padding(
+          padding: const EdgeInsets.only(top: 20),
+          child: Row(
+            children: [
+              const SizedBox(width: 45),
+              ClipRRect(
+                child: Image.asset(appBarIconAsset, width: 50),
               ),
-            ),
-            color: const Color.fromARGB(255, 255, 255, 255),
-            elevation: 2,
-            shadowColor: Colors.grey.withOpacity(0.8),
-            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Padding(
-              padding: const EdgeInsets.only(left: 14.0, right: 14, bottom: 14, top: 22),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      if (item['image_url'] != null && item['image_url'].toString().isNotEmpty)
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              CachedNetworkImage(
-                                imageUrl: item['image_url'],
-                                width: 80,
-                                height: 80,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) =>
-                                    Container(
-                                      width: 80,
-                                      height: 80,
-                                      color: const Color.fromARGB(255, 235, 235, 235), // Placeholder background
-                                      child: const Center(
-                                        child: SizedBox(
-                                          width: 16, // Smaller size
-                                          height: 16, // Smaller size
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2, // Thinner stroke
-                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.black), // Black color
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                errorWidget: (context, url, error) =>
-                                    Container(
-                                      width: 80,
-                                      height: 80,
-                                      color: Colors.grey[300],
-                                      child: const Icon(Icons.error, color: Colors.red),
-                                    ),
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(Icons.image_not_supported, size: 30),
-                        ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (item['shopcode'] != null && item['shopcode'].toString().isNotEmpty)
-                              Text(
-                                'Shop Code: ${item['shopcode']}',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green,
-                                ),
-                              ),
-                            Text(
-                              item['name'] ?? 'No Name',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            if (item['description'] != null)
-                              Text(
-                                item['description'],
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            if (item['mobile'] != null)
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Mobile: ${item['mobile']}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.end,
-                                        children: [
-                                          if (item['mobile'] != null)
-                                            GestureDetector(
-                                              onTap: () {
-                                                makeCall(item['mobile']);
-                                              },
-                                              child: Image.asset(
-                                                "asset/phone-call.png",
-                                                width: 20,
-                                              ),
-                                            ),
-                                          const SizedBox(width: 10),
-                                          if (item['whatsapp'] != null && item['whatsapp'].isNotEmpty)
-                                            GestureDetector(
-                                              onTap: () {
-                                                openWhatsApp(context, item['whatsapp']);
-                                              },
-                                              child: Image.asset(
-                                                "asset/whatsapp2.png",
-                                                width: 20,
-                                              ),
-                                            ),
-                                          const SizedBox(width: 10),
-                                          GestureDetector(
-                                            onTap: () {
-                                              if (item['name'] != null && item['description'] != null && item['mobile'] != null) {
-                                                shareDetails(item['name'], item['description'], item['mobile']);
-                                              } else {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  const SnackBar(content: Text('Unable to share. Missing item details.')),
-                                                );
-                                              }
-                                            },
-                                            child: Image.asset(
-                                              "asset/share2.png",
-                                              width: 20,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  )
-                                ],
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (item['associate'] == true)
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                decoration: const BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.only(topRight: Radius.circular(5)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (item['approvetext'] == true)
-                      const Icon(Icons.check, color: Colors.white, size: 16),
-                    if (item['approvetext'] == false || item['approvetext'] == null)
-                      Row(
-                        children: [
-                          const Icon(Icons.check, color: Colors.white, size: 16),
-                          const Icon(Icons.check, color: Colors.white, size: 16),
-                        ],
+                    Text(
+                      appBarTitle, // Use the dynamic title
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
+                    ),
                   ],
                 ),
               ),
-            ),
-        ],
+              if (cities.isNotEmpty)
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on,
+                      color: Colors.black,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 1),
+                    SizedBox(
+                      width: 150, // Adjust width as needed
+                      child: DropdownSearch<String>(
+                        items: ['All City']
+                          ..addAll(cities)
+                          ..sort(), // Add 'All City' and sort
+                        selectedItem: selectedCity,
+                        popupProps: PopupProps.menu(
+                          showSearchBox: true, // Enable search functionality
+                          searchFieldProps: TextFieldProps(
+                            decoration: InputDecoration(
+                              hintText: "Search city...",
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          constraints: BoxConstraints(maxHeight: 700), // Set the maximum height of the dropdown list
+                        ),
+                        dropdownButtonProps: const DropdownButtonProps(
+                          icon: Icon(Icons.arrow_drop_down, color: Colors.black),
+                        ),
+                        dropdownDecoratorProps: DropDownDecoratorProps(
+                          baseStyle: TextStyle(color: Colors.black),
+                          dropdownSearchDecoration: InputDecoration(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(8)),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Colors.transparent,
+                          ),
+                        ),
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedCity = newValue;
+                          });
+
+                          if (newValue != null) {
+                            SharedPreferences.getInstance().then((prefs) {
+                              prefs.setString('selectedCity', newValue);
+                            });
+                          }
+
+                          // Fetch offers for the new city
+                          setState(() {}); // Ensure this method is called to reload the page
+                        },
+                        // Ensure the selected city text is on a single line
+                        dropdownBuilder: (context, selectedItem) {
+                          return Text(
+                            selectedItem ?? 'Select City',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(color: Colors.black),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              const SizedBox(width: 10),
+            ],
+          ),
+        ),
       ),
-    );
-  },
-);
-            },
-          );
-        },
-      ),
-      floatingActionButton: AddNewItemButton(
-        cities: cities,
-        subcategory: widget.subcategory,
-      ),
-    );
-  }
+    ),
+    body: FutureBuilder<void>(
+      future: _initializationFuture,
+      builder: (context, initializationSnapshot) {
+        if (initializationSnapshot.connectionState != ConnectionState.done) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return FutureBuilder<List<Map<String, dynamic>>>(
+          future: _fetchFilteredItems(widget.subcategory, selectedCity),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
+
+            final items = snapshot.data ?? [];
+
+            if (items.isEmpty) {
+              return const Center(
+                child: Text('No items found for this category.',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              );
+            }
+
+            return ListView.builder(
+              padding: const EdgeInsets.only(top: 4, left: 4, right: 4, bottom: 60),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final item = items[index];
+                print('Document ID: ${item['documentId']}'); // 👈 Here
+                return GestureDetector(
+                  onTap: () {
+                    _checkCustomerID(item);
+                  },
+                  child: Stack(
+                    children: [
+                      Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: Colors.grey[400]!, // Border color
+                            width: 1.0, // Border width
+                          ),
+                        ),
+                        color: const Color.fromARGB(255, 255, 255, 255),
+                        elevation: 2,
+                        shadowColor: Colors.grey.withOpacity(0.8),
+                        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 14.0, right: 14, bottom: 14, top: 22),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  if (item['image_url'] != null && item['image_url'].toString().isNotEmpty)
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          CachedNetworkImage(
+                                            imageUrl: item['image_url'],
+                                            width: 80,
+                                            height: 80,
+                                            fit: BoxFit.cover,
+                                            placeholder: (context, url) =>
+                                                Container(
+                                                  width: 80,
+                                                  height: 80,
+                                                  color: const Color.fromARGB(255, 235, 235, 235), // Placeholder background
+                                                  child: const Center(
+                                                    child: SizedBox(
+                                                      width: 16, // Smaller size
+                                                      height: 16, // Smaller size
+                                                      child: CircularProgressIndicator(
+                                                        strokeWidth: 2, // Thinner stroke
+                                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black), // Black color
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                            errorWidget: (context, url, error) =>
+                                                Container(
+                                                  width: 80,
+                                                  height: 80,
+                                                  color: Colors.grey[300],
+                                                  child: const Icon(Icons.error, color: Colors.red),
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  else
+                                    Container(
+                                      width: 80,
+                                      height: 80,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[300],
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(Icons.image_not_supported, size: 30),
+                                    ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        if (item['shopcode'] != null && item['shopcode'].toString().isNotEmpty)
+                                          Text(
+                                            'Shop Code: ${item['shopcode']}',
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.green,
+                                            ),
+                                          ),
+                                        Text(
+                                          item['name'] ?? 'No Name',
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        if (item['description'] != null)
+                                          Text(
+                                            item['description'],
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(fontSize: 12),
+                                          ),
+                                        if (item['mobile'] != null)
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                'Mobile: ${item['mobile']}',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Row(
+                                                    mainAxisAlignment: MainAxisAlignment.end,
+                                                    children: [
+                                                      if (item['mobile'] != null)
+                                                        GestureDetector(
+                                                          onTap: () {
+                                                            makeCall(item['mobile']);
+                                                          },
+                                                          child: Image.asset(
+                                                            "asset/phone-call.png",
+                                                            width: 20,
+                                                          ),
+                                                        ),
+                                                      const SizedBox(width: 10),
+                                                      if (item['whatsapp'] != null && item['whatsapp'].isNotEmpty)
+                                                        GestureDetector(
+                                                          onTap: () {
+                                                            openWhatsApp(context, item['whatsapp']);
+                                                          },
+                                                          child: Image.asset(
+                                                            "asset/whatsapp2.png",
+                                                            width: 20,
+                                                          ),
+                                                        ),
+                                                      const SizedBox(width: 10),
+                                                      GestureDetector(
+                                                        onTap: () {
+                                                          if (item['name'] != null && item['description'] != null && item['mobile'] != null) {
+                                                            shareDetails(item['name'], item['description'], item['mobile']);
+                                                          } else {
+                                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                              const SnackBar(content: Text('Unable to share. Missing item details.')),
+                                                            );
+                                                          }
+                                                        },
+                                                        child: Image.asset(
+                                                          "asset/share2.png",
+                                                          width: 20,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              )
+                                            ],
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (item['associate'] == true)
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                            decoration: const BoxDecoration(
+                              color: Colors.green,
+                              borderRadius: BorderRadius.only(topRight: Radius.circular(5)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (item['approvetext'] == true)
+                                  const Icon(Icons.check, color: Colors.white, size: 16),
+                                if (item['approvetext'] == false || item['approvetext'] == null)
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.check, color: Colors.white, size: 16),
+                                      const Icon(Icons.check, color: Colors.white, size: 16),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    ),
+    floatingActionButton: AddNewItemButton(
+      cities: cities,
+      subcategory: widget.subcategory,
+    ),
+  );
+}
 }

@@ -232,8 +232,8 @@ class _ListingPageState extends State<hosListingPage> {
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Color.fromARGB(255, 255, 185, 41), // Yellow at the top
-                Colors.white, // White at the bottom
+                   const Color.fromARGB(255, 41, 219, 255),
+      Colors.white,
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -246,7 +246,7 @@ class _ListingPageState extends State<hosListingPage> {
                 const SizedBox(width: 45),
                 ClipRRect(
                   child:
-                      Image.asset("asset/citydotcomfinallogopCURVED.png", width: 50),
+                      Image.asset("asset/citylogoapp.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -255,7 +255,7 @@ class _ListingPageState extends State<hosListingPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
                       Text(
-                        'On Shop',
+                        'City dot com',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 16,

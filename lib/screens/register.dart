@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:onshopapp/mainscree.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -51,6 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
           await _firestore.collection('users').doc(user.uid).get();
 
       if (userDoc.exists) {
+        print("User is already registered. Redirecting to MainScreen.");
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => MainScreen()),
@@ -60,78 +62,129 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _register() async {
-  setState(() {
-    _isLoading = true; // Start loading
-  });
-
-  final name = _nameController.text.trim();
-  final mobile = _mobileController.text.trim();
-  final address = _addressController.text.trim();
-
-  if (_selectedCity == null) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('Please select a city.')));
     setState(() {
-      _isLoading = false; // Stop loading
+      _isLoading = true; // Start loading
     });
-    return;
-  }
 
-  if (mobile.length != 10) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Mobile number must be exactly 10 digits.')),
-    );
-    setState(() {
-      _isLoading = false; // Stop loading
-    });
-    return;
-  }
+    final name = _nameController.text.trim();
+    final mobile = _mobileController.text.trim();
+    final address = _addressController.text.trim();
 
-  try {
-    UserCredential userCredential = await _auth.signInAnonymously();
-    User? user = userCredential.user;
-
-    if (user != null) {
-      await _firestore.collection('users').doc(user.uid).set({
-        'name': name,
-        'mobile': mobile,
-        'city': _selectedCity,
-        'address': address,
-        'email': user.email ?? 'anonymous',
-        'createdAt': FieldValue.serverTimestamp(), // Added timestamp
+    if (_selectedCity == null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Please select a city.')));
+      setState(() {
+        _isLoading = false; // Stop loading
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('User registered successfully!')));
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => MainScreen()),
-      );
+      return;
     }
-  } catch (e) {
-    print("Error during registration: $e");
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('An error occurred.')));
-  } finally {
-    setState(() {
-      _isLoading = false; // Stop loading
-    });
+
+    if (mobile.length != 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Mobile number must be exactly 10 digits.')),
+      );
+      setState(() {
+        _isLoading = false; // Stop loading
+      });
+      return;
+    }
+
+    try {
+      UserCredential userCredential = await _auth.signInAnonymously();
+      User? user = userCredential.user;
+
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).set({
+          'name': name,
+          'mobile': mobile,
+          'city': _selectedCity,
+          'address': address,
+          'email': user.email ?? 'anonymous',
+          'createdAt': FieldValue.serverTimestamp(), // Added timestamp
+        });
+
+        print("User registered successfully with UID: ${user.uid}");
+        print("User data stored in Firestore: name=$name, mobile=$mobile, city=$_selectedCity, address=$address");
+
+        // Save registration status in SharedPreferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isRegistered', true);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('User registered successfully!')));
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MainScreen()),
+        );
+      }
+    } catch (e) {
+      print("Error during registration: $e");
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('An error occurred.')));
+    } finally {
+      setState(() {
+        _isLoading = false; // Stop loading
+      });
+    }
   }
-}
+
+  Future<void> _proceedWithoutRegister() async {
+    setState(() {
+      _isLoading = true; // Start loading
+    });
+
+    try {
+      UserCredential userCredential = await _auth.signInAnonymously();
+      User? user = userCredential.user;
+
+      if (user != null) {
+        await _firestore.collection('users').doc(user.uid).set({
+          'name': '',
+          'mobile': '', // Placeholder value
+          'city': '',
+          'address': '',
+          'email': user.email ?? 'anonymous',
+          'createdAt': FieldValue.serverTimestamp(), // Added timestamp
+        });
+
+        print("User proceeded without registration with UID: ${user.uid}");
+        print("User data stored in Firestore with placeholder values.");
+
+        // Save registration status in SharedPreferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isRegistered', false);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Proceeding without registration.')));
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MainScreen()),
+        );
+      }
+    } catch (e) {
+      print("Error during anonymous login: $e");
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('An error occurred.')));
+    } finally {
+      setState(() {
+        _isLoading = false; // Stop loading
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(title: const Text('Register')), backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // Gradient background
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Colors.amber, // Top color
-                  Colors.white, // Bottom color
+                  const Color.fromARGB(255, 41, 219, 255),
+      Colors.white,
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -142,7 +195,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
           ),
-          // Content
           SingleChildScrollView(
             child: Center(
               child: Padding(
@@ -150,12 +202,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Logo
                     Padding(
                       padding: const EdgeInsets.only(top: 48.0),
                       child: Center(
                         child: Image.asset(
-                          'asset/onshopnewcurvedlogo.png',
+                          'asset/citylogoapp.png',
                           height: 200,
                           width: 200,
                           fit: BoxFit.contain,
@@ -199,8 +250,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Mobile number field
-
                     TextField(
                       controller: _mobileController,
                       keyboardType: TextInputType.number,
@@ -276,30 +325,32 @@ class _RegisterPageState extends State<RegisterPage> {
                       },
                     ),
                     const SizedBox(height: 20),
-                    // Address field
                     TextField(
-  controller: _addressController,
-  minLines: 2, // Minimum number of lines
-  maxLines: null, // Allow unlimited lines
-  decoration: InputDecoration(
-    hintText: "Delivery Address",
-
-    border: OutlineInputBorder(
-      borderSide: const BorderSide(color: Colors.black), // Black border
-      borderRadius: BorderRadius.circular(8), // Rounded corners
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderSide: const BorderSide(color: Colors.black), // Black border when focused
-      borderRadius: BorderRadius.circular(8), // Rounded corners
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderSide: const BorderSide(color: Colors.black), // Black border when enabled
-      borderRadius: BorderRadius.circular(10.0),
-    ),
-  ),
-),
+                      controller: _addressController,
+                      minLines: 2, // Minimum number of lines
+                      maxLines: null, // Allow unlimited lines
+                      decoration: InputDecoration(
+                        hintText: "Delivery Address",
+                        border: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                              color: Colors.black), // Black border
+                          borderRadius:
+                              BorderRadius.circular(8), // Rounded corners
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                              color: Colors.black), // Black border when focused
+                          borderRadius:
+                              BorderRadius.circular(8), // Rounded corners
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                              color: Colors.black), // Black border when enabled
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 20),
-                    // Register button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -321,6 +372,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                       ),
                     ),
+                    const SizedBox(height: 20),
+                   
                   ],
                 ),
               ),

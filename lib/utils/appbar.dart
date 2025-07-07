@@ -79,7 +79,7 @@ class AppBarContent extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(15),
               child: Image.asset(
-                "asset/citydotcomfinallogopsdfinall.png",
+                "asset/citylogoapp.png",
                 width: 60,
               ),
             ),

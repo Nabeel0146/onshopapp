@@ -3,12 +3,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:onshopapp/screens/Products/Productspage.dart'; // Ensure this import is correct
+import 'package:onshopapp/screens/Products/Productspage.dart';
 
-class ProductCategoriesPage extends StatelessWidget {
+class ProductCategoriesPage extends StatefulWidget {
+  @override
+  State<ProductCategoriesPage> createState() => _ProductCategoriesPageState();
+}
+
+class _ProductCategoriesPageState extends State<ProductCategoriesPage> {
+  final ValueNotifier<int> currentIndex = ValueNotifier<int>(0);
+
   Future<List<String>> _fetchBannerImageUrls() async {
     try {
-      final querySnapshot = await FirebaseFirestore.instance.collection('shoppagebanners').doc('banner').get();
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('shoppagebanners')
+          .doc('banner')
+          .get();
       final data = querySnapshot.data();
       List<String> bannerUrls = [];
       for (int i = 1; i <= 30; i++) {
@@ -17,7 +27,7 @@ class ProductCategoriesPage extends StatelessWidget {
           bannerUrls.add(data[key] as String);
         }
       }
-      print('Fetched banner image URLs: $bannerUrls'); // Debugging
+      print('Fetched banner image URLs: $bannerUrls');
       return bannerUrls;
     } catch (e) {
       print('Error fetching banner images: $e');
@@ -26,19 +36,25 @@ class ProductCategoriesPage extends StatelessWidget {
   }
 
   @override
+  void dispose() {
+    currentIndex.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent, // Transparent to allow gradient
+        backgroundColor: Colors.transparent,
         toolbarHeight: 70,
-        elevation: 0, // Remove shadow if not needed
+        elevation: 0,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Color.fromARGB(255, 255, 185, 41), // Yellow at the top
-                Colors.white, // White at the bottom
+                Color.fromARGB(255, 255, 185, 41),
+                Colors.white,
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -53,11 +69,11 @@ class ProductCategoriesPage extends StatelessWidget {
                   child: Image.asset("asset/onshopoldroundedlogo.png", width: 50),
                 ),
                 const SizedBox(width: 10),
-                Expanded(
+                const Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'On Shop',
                         style: TextStyle(
@@ -86,58 +102,88 @@ class ProductCategoriesPage extends StatelessWidget {
 
             return Column(
               children: [
-                // Carousel of banners
+                // Carousel with dot indicators
                 Padding(
-                  padding: const EdgeInsets.only(left:16.0, right: 16, top: 16),
+                  padding: const EdgeInsets.only(left: 16.0, right: 16, top: 16),
                   child: bannerUrls.isNotEmpty
-                      ? CarouselSlider(
-                          items: bannerUrls.map((url) {
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: CachedNetworkImage(
-                                imageUrl: url,
-                                fit: BoxFit.contain, // Ensure the image fits within the container without being cut off
-                                placeholder: (context, url) =>
-                                    Shimmer.fromColors(
-                                  baseColor: Colors.grey[300]!,
-                                  highlightColor: Colors.grey[100]!,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
+                      ? Column(
+                          children: [
+                            CarouselSlider(
+                              items: bannerUrls.map((url) {
+                                return ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: CachedNetworkImage(
+                                    imageUrl: url,
+                                    fit: BoxFit.contain,
+                                    placeholder: (context, url) =>
+                                        Shimmer.fromColors(
+                                      baseColor: Colors.grey[300]!,
+                                      highlightColor: Colors.grey[100]!,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        Shimmer.fromColors(
+                                      baseColor: Colors.grey[300]!,
+                                      highlightColor: Colors.grey[100]!,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                                errorWidget: (context, url, error) =>
-                                    Shimmer.fromColors(
-                                  baseColor: Colors.grey[300]!,
-                                  highlightColor: Colors.grey[100]!,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
+                                );
+                              }).toList(),
+                              options: CarouselOptions(
+                                height: 340,
+                                enlargeCenterPage: true,
+                                autoPlay: true,
+                                aspectRatio: 16 / 9,
+                                autoPlayCurve: Curves.fastOutSlowIn,
+                                enableInfiniteScroll: true,
+                                autoPlayAnimationDuration:
+                                    const Duration(milliseconds: 800),
+                                viewportFraction: 1,
+                                onPageChanged: (index, reason) {
+                                  currentIndex.value = index;
+                                },
                               ),
-                            );
-                          }).toList(),
-                          options: CarouselOptions(
-                            height: 340,
-                            enlargeCenterPage: true,
-                            autoPlay: true,
-                            aspectRatio: 16 / 9,
-                            autoPlayCurve: Curves.fastOutSlowIn,
-                            enableInfiniteScroll: true,
-                            autoPlayAnimationDuration:
-                                const Duration(milliseconds: 800),
-                            viewportFraction: 1,
-                          ),
+                            ),
+                            const SizedBox(height: 10),
+                            ValueListenableBuilder<int>(
+                              valueListenable: currentIndex,
+                              builder: (context, index, _) {
+                                return Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(bannerUrls.length, (i) {
+                                    return Container(
+                                      width: 6,
+                                      height: 6,
+                                      margin: const EdgeInsets.symmetric(horizontal: 3.0),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: index == i
+                                            ? Colors.black
+                                            : Colors.grey[400],
+                                      ),
+                                    );
+                                  }),
+                                );
+                              },
+                            ),
+                          ],
                         )
                       : Shimmer.fromColors(
                           baseColor: Colors.grey[300]!,
                           highlightColor: Colors.grey[100]!,
                           child: Container(
+                            height: 340,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
@@ -145,9 +191,14 @@ class ProductCategoriesPage extends StatelessWidget {
                           ),
                         ),
                 ),
+
                 const SizedBox(height: 16),
+
+                // Grid of product categories
                 StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('productcategories').snapshots(),
+                  stream: FirebaseFirestore.instance
+                      .collection('productcategories')
+                      .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -160,14 +211,14 @@ class ProductCategoriesPage extends StatelessWidget {
                     final categories = snapshot.data!.docs;
 
                     return GridView.builder(
-                      shrinkWrap: true, // Allow GridView to shrink-wrap its content
-                      physics: const NeverScrollableScrollPhysics(), // Disable GridView's own scrolling
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
                       padding: const EdgeInsets.all(16.0),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
                         crossAxisSpacing: 16.0,
                         mainAxisSpacing: 16.0,
-                        childAspectRatio: 1.0, // Adjust this value to change the aspect ratio of the grid items
+                        childAspectRatio: 1.0,
                       ),
                       itemCount: categories.length,
                       itemBuilder: (context, index) {
@@ -177,18 +228,18 @@ class ProductCategoriesPage extends StatelessWidget {
 
                         return GestureDetector(
                           onTap: () {
-                            // Navigate to ProductsPage with the selected category name
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ProductsPage(category: name ?? 'Category'),
+                                builder: (context) => ProductsPage(
+                                  category: name ?? 'Category',
+                                ),
                               ),
                             );
                           },
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(8.0),
-                              
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -199,7 +250,8 @@ class ProductCategoriesPage extends StatelessWidget {
                                         width: 84,
                                         height: 90,
                                         fit: BoxFit.cover,
-                                        placeholder: (context, url) => Shimmer.fromColors(
+                                        placeholder: (context, url) =>
+                                            Shimmer.fromColors(
                                           baseColor: Colors.grey[200]!,
                                           highlightColor: Colors.grey[100]!,
                                           child: Container(
@@ -209,7 +261,8 @@ class ProductCategoriesPage extends StatelessWidget {
                                             ),
                                           ),
                                         ),
-                                        errorWidget: (context, url, error) => Shimmer.fromColors(
+                                        errorWidget: (context, url, error) =>
+                                            Shimmer.fromColors(
                                           baseColor: Colors.grey[200]!,
                                           highlightColor: Colors.grey[100]!,
                                           child: Container(
@@ -222,11 +275,7 @@ class ProductCategoriesPage extends StatelessWidget {
                                       )
                                     : const Icon(Icons.category, size: 64),
                                 const SizedBox(height: 8.0),
-                                // Text(
-                                //   name ?? 'Category',
-                                //   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                                //   textAlign: TextAlign.center,
-                                // ),
+                                // Optional: Add category name here
                               ],
                             ),
                           ),

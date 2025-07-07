@@ -68,7 +68,7 @@ class HospitalsPage extends StatelessWidget {
               children: [
                 const SizedBox(width: 45),
                 ClipRRect(
-                  child: Image.asset("asset/citydotcomfinallogopsdfinall.png", width: 50),
+                  child: Image.asset("asset/citylogoapp.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -77,7 +77,7 @@ class HospitalsPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
                       Text(
-                        'On Shop',
+                        'City dot com',
                         style: TextStyle(
                           color: Colors.black,
                           fontSize: 18,

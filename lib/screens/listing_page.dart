@@ -261,7 +261,7 @@ Widget build(BuildContext context) {
   String appBarIconAsset;
   String appBarTitle;
 
-  if (widget.collectionName == 'workerscategories' || widget.collectionName == 'taxicategories') {
+  if (widget.collectionName == '2' || widget.collectionName == '2') {
     appBarGradientColors = [
       const Color.fromARGB(255, 41, 219, 255),
       Colors.white,

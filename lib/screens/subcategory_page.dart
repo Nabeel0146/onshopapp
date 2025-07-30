@@ -67,8 +67,8 @@ class _SubcategoryGridPageState extends State<SubcategoryGridPage> {
     List<Color> appBarGradientColors;
     String appBarIconAsset;
 
-    if (widget.collectionName == 'workerscategories' ||
-        widget.collectionName == 'taxicategories') {
+    if (widget.collectionName == '0' ||
+        widget.collectionName == '0') {
       appBarGradientColors = [
         const Color.fromARGB(255, 41, 219, 255),
         Colors.white,
@@ -112,9 +112,7 @@ class _SubcategoryGridPageState extends State<SubcategoryGridPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.collectionName == 'workerscategories' || widget.collectionName == 'taxicategories'
-                      ? 'City dot com'
-                      : 'On Shop',
+                   'On Shop',
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 18,

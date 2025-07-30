@@ -917,8 +917,7 @@ Widget _buildAdsSection() {
   Widget _buildOtherCategories() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors
-            .lightBlue[50], // Light blue background for the outer container
+        color:  Color.fromARGB(255, 255, 247, 230),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -936,7 +935,7 @@ Widget _buildAdsSection() {
           children: [
             Center(
               child: const Text(
-                "City Dot Com",
+                "Malappuram Info",
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

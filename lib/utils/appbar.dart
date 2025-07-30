@@ -40,7 +40,7 @@ class GradientAppBar extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color.fromARGB(255, 41, 219, 255), // Orange
+            const  Color.fromARGB(255, 255, 185, 41),
             Colors.white, // White
           ],
           begin: Alignment.topCenter,
@@ -79,7 +79,7 @@ class AppBarContent extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(15),
               child: Image.asset(
-                "asset/citylogoapp.png",
+                "asset/onshopnewcurvedlogo.png",
                 width: 60,
               ),
             ),

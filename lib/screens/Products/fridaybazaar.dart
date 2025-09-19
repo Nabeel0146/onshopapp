@@ -15,73 +15,74 @@ class FridayBazaarSale extends StatefulWidget {
 
 class _FridayBazaarSaleState extends State<FridayBazaarSale> {
   late Future<void> _initializationFuture;
+  late bool _isBazaarDay;
 
-  @override
-  void initState() {
-    super.initState();
-    _initializationFuture = _initializeData();
+  /* ---------- helpers ---------- */
+  bool _checkBazaarDay() {
+    final int weekday = DateTime.now().weekday;
+    return weekday == DateTime.friday || weekday == DateTime.saturday;
   }
 
   Future<void> _initializeData() async {
-    // Initialization logic if needed
-    print('Initialization complete.');
+    _isBazaarDay = _checkBazaarDay();
+    print('Bazaar-day check: $_isBazaarDay');
   }
 
+  /* ---------- Firestore ---------- */
   Future<List<Map<String, dynamic>>> _fetchFridayBazaarItems() async {
     try {
-      print('Fetching Friday Bazaar items...');
-      final querySnapshot = await FirebaseFirestore.instance
+      print('Fetching Friday Bazaar items…');
+      final qs = await FirebaseFirestore.instance
           .collection('products')
           .where('fridaybazaar', isEqualTo: true)
           .where('display', isEqualTo: true)
           .get();
-
-      print('Number of items fetched: ${querySnapshot.docs.length}');
-      return querySnapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
+      print('Items fetched: ${qs.docs.length}');
+      return qs.docs.map((d) => d.data()).toList();
     } catch (e) {
       print('Error fetching items: $e');
       return [];
     }
   }
 
+  /* ---------- User address ---------- */
   Future<String> getUserAddress() async {
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        return 'No address provided';
-      }
+      if (user == null) return 'No address provided';
 
-      final userDoc = await FirebaseFirestore.instance
+      final snap = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .get();
-      if (!userDoc.exists) {
-        return 'No address provided';
-      }
+      if (!snap.exists) return 'No address provided';
 
-      return userDoc.data()?['address'] ?? 'No address provided';
+      return snap.data()?['address'] ?? 'No address provided';
     } catch (e) {
-      print('Error fetching user address: $e');
+      print('Error fetching address: $e');
       return 'No address provided';
     }
   }
 
-  Future<void> _openWhatsApp(String phoneNumber, String productName, int price,
-      int discountedPrice, String description) async {
-    final userAddress = await getUserAddress();
-    final formattedPhoneNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
-    final productDetails = """
-    Name: $productName
-    Price: ₹$price
-    Discounted Price: ₹$discountedPrice
-    Description: $description
-    Address: $userAddress
-    """;
-
+  /* ---------- WhatsApp ---------- */
+  Future<void> _openWhatsApp(
+    String phoneNumber,
+    String productName,
+    int price,
+    int discountedPrice,
+    String description,
+  ) async {
+    final address = await getUserAddress();
+    final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    final text = '''
+Name: $productName
+Price: ₹$price
+Discounted Price: ₹$discountedPrice
+Description: $description
+Address: $address
+''';
     final uri = Uri.parse(
-        'https://wa.me/$formattedPhoneNumber?text=${Uri.encodeComponent(productDetails)}');
+        'https://wa.me/$cleanNumber?text=${Uri.encodeComponent(text)}');
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -92,19 +93,27 @@ class _FridayBazaarSaleState extends State<FridayBazaarSale> {
     }
   }
 
+  /* ---------- Lifecycle ---------- */
+  @override
+  void initState() {
+    super.initState();
+    _initializationFuture = _initializeData();
+  }
+
+  /* ---------- UI ---------- */
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent, // Transparent to allow gradient
+        backgroundColor: Colors.transparent,
         toolbarHeight: 70,
-        elevation: 0, // Remove shadow if not needed
+        elevation: 0,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Color.fromARGB(255, 255, 185, 41), // Yellow at the top
-                Colors.white, // White at the bottom
+                Color.fromARGB(255, 255, 185, 41),
+                Colors.white,
               ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -117,14 +126,14 @@ class _FridayBazaarSaleState extends State<FridayBazaarSale> {
                 const SizedBox(width: 15),
                 ClipRRect(
                   child:
-                      Image.asset("asset/onshopnewcurvedlogo.png", width: 50),
+                      Image.asset('asset/onshopnewcurvedlogo.png', width: 50),
                 ),
                 const SizedBox(width: 10),
-                Expanded(
+                const Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'On Shop',
                         style: TextStyle(
@@ -142,27 +151,51 @@ class _FridayBazaarSaleState extends State<FridayBazaarSale> {
         ),
       ),
       body: Container(
-        padding: EdgeInsets.only(top: 10, left: 10, right: 10),
+        padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
         child: FutureBuilder<void>(
           future: _initializationFuture,
-          builder: (context, initializationSnapshot) {
-            if (initializationSnapshot.connectionState !=
-                ConnectionState.done) {
+          builder: (context, initSnap) {
+            if (initSnap.connectionState != ConnectionState.done) {
               return const Center(child: CircularProgressIndicator());
             }
+
+            /* ----- NOT Friday or Saturday ----- */
+            if (!_isBazaarDay) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset('asset/99deals.png',
+                        width: double.infinity, fit: BoxFit.fitHeight),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Friday Bazaar is open only on\nFriday & Saturday',
+                      textAlign: TextAlign.center,
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Come back then for the best discounts!',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            /* ----- Friday or Saturday -> show products ----- */
             return FutureBuilder<List<Map<String, dynamic>>>(
               future: _fetchFridayBazaarItems(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+              builder: (context, snap) {
+                if (snap.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-
-                if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
+                if (snap.hasError) {
+                  return Center(child: Text('Error: ${snap.error}'));
                 }
 
-                final items = snapshot.data ?? [];
-
+                final items = snap.data ?? [];
                 if (items.isEmpty) {
                   return const Center(
                     child: Text('No items found for Friday Bazaar Sale.',
@@ -175,40 +208,32 @@ class _FridayBazaarSaleState extends State<FridayBazaarSale> {
                   child: Column(
                     children: [
                       GestureDetector(
-                        onTap: () {
-                          // Navigate to 99deals page
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => NinetyNineDealsPage()));
-                        },
-                        child: Image.asset(
-                          'asset/99deals.png', // Replace with your actual image path
-                          width:
-                              double.infinity, // Make the image take full width
-                          // Adjust the height as needed
-                          fit: BoxFit.fitHeight,
-                        ),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const NinetyNineDealsPage())),
+                        child: Image.asset('asset/99deals.png',
+                            width: double.infinity, fit: BoxFit.fitHeight),
                       ),
                       const SizedBox(height: 20),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const Text(
+                        children: const [
+                          Text(
                             'Welcome To Friday Bazaar',
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const Text(
+                          Text(
                             'Get the products at the best discounted price ',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey,
                             ),
                           ),
-                          const Text(
+                          Text(
                             'Only On Fridays',
                             style: TextStyle(
                               fontSize: 18,
@@ -227,31 +252,24 @@ class _FridayBazaarSaleState extends State<FridayBazaarSale> {
                           crossAxisCount: 2,
                           crossAxisSpacing: 8,
                           mainAxisSpacing: 8,
-                          childAspectRatio:
-                              0.55, // Adjust this value to give more height to each grid item
+                          childAspectRatio: 0.55,
                         ),
                         itemCount: items.length,
                         itemBuilder: (context, index) {
                           final item = items[index];
                           return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      SingleProductPage(product: item),
-                                ),
-                              );
-                            },
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    SingleProductPage(product: item),
+                              ),
+                            ),
                             child: Container(
                               decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: Colors
-                                      .grey, // You can change the border color as needed
-                                  width: 0.5, // Set the border width to 0.5
-                                ),
-                                borderRadius: BorderRadius.circular(
-                                    8), // Optional: Add rounded corners
+                                border:
+                                    Border.all(color: Colors.grey, width: 0.5),
+                                borderRadius: BorderRadius.circular(8),
                               ),
                               child: Card(
                                 elevation: 0,
@@ -279,7 +297,7 @@ class _FridayBazaarSaleState extends State<FridayBazaarSale> {
                                                 child: CachedNetworkImage(
                                                   imageUrl: item['image_url'],
                                                   fit: BoxFit.cover,
-                                                  placeholder: (context, url) =>
+                                                  placeholder: (_, __) =>
                                                       Container(
                                                     color: Colors.grey[300],
                                                     child: const Center(
@@ -287,9 +305,8 @@ class _FridayBazaarSaleState extends State<FridayBazaarSale> {
                                                           CircularProgressIndicator(),
                                                     ),
                                                   ),
-                                                  errorWidget:
-                                                      (context, url, error) =>
-                                                          Container(
+                                                  errorWidget: (_, __, ___) =>
+                                                      Container(
                                                     color: Colors.grey[300],
                                                     child:
                                                         const Icon(Icons.error),
@@ -309,7 +326,7 @@ class _FridayBazaarSaleState extends State<FridayBazaarSale> {
                                           const SizedBox(height: 8),
                                           Padding(
                                             padding: const EdgeInsets.symmetric(
-                                                horizontal: 8.0),
+                                                horizontal: 8),
                                             child: Text(
                                               item['name'] ?? 'No Name',
                                               overflow: TextOverflow.ellipsis,
@@ -322,10 +339,10 @@ class _FridayBazaarSaleState extends State<FridayBazaarSale> {
                                           ),
                                           Padding(
                                             padding: const EdgeInsets.symmetric(
-                                                horizontal: 2.0),
+                                                horizontal: 2),
                                             child: Container(
                                               padding: const EdgeInsets.only(
-                                                  left: 6.0,
+                                                  left: 6,
                                                   right: 6,
                                                   top: 2,
                                                   bottom: 2),
@@ -344,7 +361,7 @@ class _FridayBazaarSaleState extends State<FridayBazaarSale> {
                                           ),
                                           Padding(
                                             padding: const EdgeInsets.symmetric(
-                                                horizontal: 8.0),
+                                                horizontal: 8),
                                             child: Text(
                                               'MRP ₹${item['price'] ?? 'N/A'}',
                                               style: const TextStyle(
@@ -357,7 +374,7 @@ class _FridayBazaarSaleState extends State<FridayBazaarSale> {
                                           const SizedBox(height: 1),
                                           Padding(
                                             padding: const EdgeInsets.symmetric(
-                                                horizontal: 8.0),
+                                                horizontal: 8),
                                             child: Text(
                                               '₹${item['discountedprice'] ?? 'N/A'}',
                                               style: const TextStyle(
@@ -370,7 +387,7 @@ class _FridayBazaarSaleState extends State<FridayBazaarSale> {
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 1.0, vertical: 2.0),
+                                          horizontal: 1, vertical: 2),
                                       child: ElevatedButton(
                                         onPressed: () {
                                           if (item['whatsappnumber'] != null) {
@@ -392,8 +409,7 @@ class _FridayBazaarSaleState extends State<FridayBazaarSale> {
                                           ),
                                         ),
                                         child: Row(
-                                          mainAxisSize: MainAxisSize
-                                              .min, // Wrap content tightly
+                                          mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Image.asset(
                                               'asset/whatsapp.png',

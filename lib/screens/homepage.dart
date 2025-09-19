@@ -5,14 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:in_app_update/in_app_update.dart';
+import 'package:onshopapp/Hospitals/hospitalcategory.dart';
 import 'package:onshopapp/screens/Products/99deals.dart';
 import 'package:onshopapp/screens/Products/Productspage.dart';
 import 'package:onshopapp/screens/Products/singleproductpage.dart';
+import 'package:onshopapp/screens/jobs/jobs.dart';
 import 'package:onshopapp/screens/searchresults.dart';
+import 'package:onshopapp/screens/subcategory_page.dart';
 import 'package:onshopapp/utils/appbar.dart';
 import 'package:onshopapp/utils/sidebar.dart';
 import 'package:onshopapp/widgets/widgets.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -290,25 +294,24 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 30),
             _buildAdsSection(),
             const SizedBox(height: 10),
-             Padding(
-               padding: const EdgeInsets.all(8.0),
-               child: GestureDetector(
-                          onTap: () {
-                            // Navigate to 99deals page
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => NinetyNineDealsPage()));
-                          },
-                          child: Image.asset(
-                            'asset/99deals.png', // Replace with your actual image path
-                            width:
-                                double.infinity, // Make the image take full width
-                            // Adjust the height as needed
-                            fit: BoxFit.fitHeight,
-                          ),
-                        ),
-             ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: GestureDetector(
+                onTap: () {
+                  // Navigate to 99deals page
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => NinetyNineDealsPage()));
+                },
+                child: Image.asset(
+                  'asset/99deals.png', // Replace with your actual image path
+                  width: double.infinity, // Make the image take full width
+                  // Adjust the height as needed
+                  fit: BoxFit.fitHeight,
+                ),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: _buildProductsSection(),
@@ -586,32 +589,18 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildOtherCategories() {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors
-            .lightBlue[50], // Light blue background for the outer container
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3), // changes position of shadow
-          ),
-        ],
-      ),
+      color: Colors.grey[200],
       child: Padding(
-        padding: const EdgeInsets.all(16), // Padding inside the outer container
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(
-              child: const Text(
-                "City Dot Com",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+            const Text(
+              "Other Categories",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
             ),
             const SizedBox(height: 8),
@@ -619,33 +608,33 @@ class _HomePageState extends State<HomePage> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 30,
-                  childAspectRatio: .90),
+                crossAxisCount: 4,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+              ),
               children: [
                 buildSmallCategoryTile(
                   context,
                   'Workers',
-                  'asset/jobportal.jpg',
+                  'asset/labour-day.png',
                   'workerscategories',
                 ),
                 buildSmallCategoryTile(
                   context,
                   'Hello Taxi',
-                  'asset/hellowtaxi.jpg',
+                  'asset/taxi.png',
                   'taxicategories',
                 ),
                 buildSmallCategoryTile(
                   context,
-                  ' Hospitals',
-                  'asset/nearesthospital.jpg',
+                  'Hospitals',
+                  'asset/medicine.png',
                   'hospitalcategories',
                 ),
                 buildSmallCategoryTile(
                   context,
                   'Job Vacancy',
-                  'asset/jobvacancy.jpg',
+                  'asset/suitcase.png',
                   '',
                 ),
               ],
@@ -657,44 +646,78 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget buildSmallCategoryTile(
-      BuildContext context, String name, String imageUrl, String route) {
-    return GestureDetector(
-      onTap: () {
-        if (route.isNotEmpty) {
-          Navigator.pushNamed(context, route);
-        }
-      },
-      child: Container(
-        width: 20,
-        height: 60,
-        decoration: BoxDecoration(
-          color: Colors.white, // White background for the small category tiles
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              imageUrl,
-              width: 65,
-              height: 65,
-              fit: BoxFit.cover,
-            ),
-            const SizedBox(height: 1),
-            Text(
-              name,
-              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(
-              height: 2,
-            )
-          ],
-        ),
+  Widget buildSmallCategoryTile(BuildContext context, String title,
+    String assetImagePath, String collectionName) {
+  return GestureDetector(
+    onTap: () {
+      if (title == 'Job Vacancy') {
+        // Navigate to the JobsListingPage when "Jobs" is clicked
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => JobsListingPage(),
+          ),
+        );
+      } else if (title == 'Hospitals') {
+        // Navigate to the HospitalsPage when "Hospitals" is clicked
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HospitalsPage(),
+          ),
+        );
+      } else {
+        // Otherwise, navigate to the SubcategoryGridPage
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                SubcategoryGridPage(collectionName: collectionName),
+          ),
+        );
+      }
+    },
+    child: Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.3),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: Offset(0, 3), // Shadow position
+          ),
+        ],
       ),
-    );
-  }
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            assetImagePath,
+            height: 30, // Adjust size as needed
+            width: 30,
+          ),
+          SizedBox(height: 5),
+          Padding(
+            padding: const EdgeInsets.only(right:3, left: 3),
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.black87,
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   Widget _buildProductsSection() {
     return FutureBuilder<List<Map<String, dynamic>>>(
@@ -871,15 +894,17 @@ class _HomePageState extends State<HomePage> {
                                 horizontal: 1.0, vertical: 2.0),
                             child: ElevatedButton(
                               onPressed: () {
-                                // if (item['whatsappnumber'] != null) {
-                                //   _openWhatsApp(
-                                //     item['whatsappnumber'],
-                                //     item['name'] ?? 'No Name',
-                                //     item['price'] ?? 0,
-                                //     item['discountedprice'] ?? 0,
-                                //     item['description'] ?? 'No Description',
-                                //   );
-                                // }
+
+                               if (item['whatsappnumber'] != null) {
+                                            _openWhatsApp(
+                                              item['whatsappnumber'],
+                                              item['name'] ?? 'No Name',
+                                              item['price'] ?? 0,
+                                              item['discountedprice'] ?? 0,
+                                              item['description'] ??
+                                                  'No Description',
+                                            );
+                                          }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
@@ -920,6 +945,53 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
+
+  Future<String> getUserAddress() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return 'No address provided';
+
+      final snap = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+      if (!snap.exists) return 'No address provided';
+
+      return snap.data()?['address'] ?? 'No address provided';
+    } catch (e) {
+      print('Error fetching address: $e');
+      return 'No address provided';
+    }
+  }
+  
+   Future<void> _openWhatsApp(
+    String phoneNumber,
+    String productName,
+    int price,
+    int discountedPrice,
+    String description,
+  ) async {
+    final address = await getUserAddress();
+    final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    final text = '''
+Name: $productName
+Price: ₹$price
+Discounted Price: ₹$discountedPrice
+Description: $description
+Address: $address
+''';
+    final uri = Uri.parse(
+        'https://wa.me/$cleanNumber?text=${Uri.encodeComponent(text)}');
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not open WhatsApp for $phoneNumber')),
+      );
+    }
+  }
+
 
   Future<List<Map<String, dynamic>>> _fetchAllProducts() async {
     try {

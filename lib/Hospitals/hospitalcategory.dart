@@ -68,7 +68,7 @@ class HospitalsPage extends StatelessWidget {
               children: [
                 const SizedBox(width: 45),
                 ClipRRect(
-                  child: Image.asset("asset/citylogoapp.png", width: 50),
+                  child: Image.asset("asset/citydotcomlogonew copy.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(

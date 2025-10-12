@@ -266,7 +266,7 @@ Widget build(BuildContext context) {
       const Color.fromARGB(255, 41, 219, 255),
       Colors.white,
     ];
-    appBarIconAsset = "asset/citylogo copy.png";
+    appBarIconAsset = "asset/citydotcomlogonew copy.png";
     appBarTitle = 'City dot com';
   } else {
     appBarGradientColors = [

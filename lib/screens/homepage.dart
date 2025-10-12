@@ -575,14 +575,24 @@ Widget buildBanner(List<String> bannerImages) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSearchButton(),
+            _buildProductCategories(), // New section for scrollable rectangles
+            const SizedBox(height: 2),
 
              
             buildBanner(bannerImages),
             const SizedBox(height: 26),
-            _buildProductCategories(), // New section for scrollable rectangles
-            const SizedBox(height: 2),
+           
             Padding(
-              padding: const EdgeInsets.only(left:8.0, right: 8, bottom: 20),
+              padding: const EdgeInsets.only(left: 10.0, right: 10, bottom: 10),
+              child: _buildOtherCategories(),
+            ),
+            const SizedBox(height: 16),
+
+            _buildCategoryTiles(),
+            
+            
+            Padding(
+              padding: const EdgeInsets.only(left:8.0, right: 8, bottom: 1),
               child: GestureDetector(
                 onTap: () {
                   // Navigate to 99deals page
@@ -599,16 +609,10 @@ Widget buildBanner(List<String> bannerImages) {
                 ),
               ),
             ),
-
-            _buildCategoryTiles(),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.only(left: 10.0, right: 10),
-              child: _buildOtherCategories(),
-            ),
-            const SizedBox(height: 30),
-            _buildAdsSection(),
-            const SizedBox(height: 10),
+             
+            
+           
+            const SizedBox(height: 5),
            
             _buildFridayBazaarSection(), // Add the Friday Bazaar section here
             const SizedBox(height: 10),

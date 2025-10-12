@@ -73,7 +73,7 @@ class _SubcategoryGridPageState extends State<SubcategoryGridPage> {
         const Color.fromARGB(255, 41, 219, 255),
         Colors.white,
       ];
-      appBarIconAsset = "asset/citylogo copy.png";
+      appBarIconAsset = "asset/citydotcomlogonew copy.png";
     } else {
       appBarGradientColors = [
         const Color.fromARGB(255, 255, 185, 41),

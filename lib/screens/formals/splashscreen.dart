@@ -143,12 +143,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('asset/8880783.jpg'), // Replace with your background image asset path
-            fit: BoxFit.fitHeight,
-          ),
-        ),
+       color: Color.fromARGB(255, 255, 255, 255),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -168,7 +163,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       child: Column(
                         children: [
                           Image.asset(
-                            'asset/onshopcurvedlogo.jpg', // Logo image
+                            'asset/citydotcomlogonew copy.png', // Logo image
                             width: 200,
                             height: 200,
                           ),

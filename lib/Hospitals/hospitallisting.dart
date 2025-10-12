@@ -246,7 +246,7 @@ class _ListingPageState extends State<hosListingPage> {
                 const SizedBox(width: 45),
                 ClipRRect(
                   child:
-                      Image.asset("asset/citylogoapp.png", width: 50),
+                      Image.asset("asset/citydotcomlogonew copy.png", width: 50),
                 ),
                 const SizedBox(width: 10),
                 Expanded(

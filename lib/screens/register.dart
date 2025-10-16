@@ -206,7 +206,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       padding: const EdgeInsets.only(top: 48.0),
                       child: Center(
                         child: Image.asset(
-                          'asset/citylogoapp.png',
+                          'asset/citydotcomlogonew copy.png',
                           height: 200,
                           width: 200,
                           fit: BoxFit.contain,

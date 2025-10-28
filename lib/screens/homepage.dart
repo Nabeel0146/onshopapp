@@ -10,7 +10,7 @@ import 'package:onshopapp/screens/Products/99deals.dart';
 import 'package:onshopapp/screens/Products/Productspage.dart';
 import 'package:onshopapp/screens/Products/singleproductpage.dart';
 import 'package:onshopapp/screens/jobs/jobs.dart';
-import 'package:onshopapp/screens/searchresults.dart';
+import 'package:onshopapp/Search/searchresults.dart';
 import 'package:onshopapp/screens/subcategory_page.dart';
 import 'package:onshopapp/utils/appbar.dart';
 import 'package:onshopapp/utils/sidebar.dart';
@@ -602,11 +602,7 @@ Widget buildBanner(List<String> bannerImages) {
 
             _buildCategoryTiles(),
             const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.only(left: 10.0, right: 10),
-              child: _buildOtherCategories(),
-            ),
-            const SizedBox(height: 30),
+          
             _buildAdsSection(),
             const SizedBox(height: 10),
            
@@ -900,91 +896,13 @@ Widget _buildAdsSection() {
               Colors.red,
               'shopcategories',
             ),
-            buildLargeCategoryTile(
-              context,
-              'Services',
-              'Find Service Stores',
-              'asset/serviceicon.png',
-              Colors.red,
-              'servicecategories',
-            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildOtherCategories() {
-    return Container(
-      decoration: BoxDecoration(
-        color:  Color.fromARGB(255, 255, 247, 230),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3), // changes position of shadow
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16), // Padding inside the outer container
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: const Text(
-                "Malappuram Info",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            GridView(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 30,
-                  childAspectRatio: .90),
-              children: [
-                buildSmallCategoryTile(
-                  context,
-                  'Workers',
-                  'asset/jobportal.jpg',
-                  SubcategoryGridPage(collectionName: "workerscategories",),
-                ),
-                buildSmallCategoryTile(
-                  context,
-                  'Hello Taxi',
-                  'asset/hellowtaxi.jpg',
-                  SubcategoryGridPage(collectionName: "taxicategories",),
-                ),
-                buildSmallCategoryTile(
-                  context,
-                  ' Hospitals',
-                  'asset/nearesthospital.jpg',
-                  HospitalsPage(),
-                ),
-                buildSmallCategoryTile(
-                  context,
-                  'Job Vacancy',
-                  'asset/jobvacancy.jpg',
-                  JobsListingPage(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-          ],
-        ),
-      ),
-    );
-  }
+ 
 
  Widget buildSmallCategoryTile(
     BuildContext context, String name, String imageUrl, Widget page) {

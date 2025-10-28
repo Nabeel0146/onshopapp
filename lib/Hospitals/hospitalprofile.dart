@@ -6,7 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:onshopapp/Hospitals/edithospital.dart';
-import 'package:share_plus/share_plus.dart';
+
 import 'package:url_launcher/url_launcher.dart';
 
 class HospitalProfilePage extends StatelessWidget {
@@ -48,12 +48,12 @@ class HospitalProfilePage extends StatelessWidget {
   $footer
   ''';
 
-    try {
-      await Share.share(shareContent, subject: 'Check out this hospital on Onshop!');
-      print('Sharing successful');
-    } catch (e) {
-      print('Error while sharing: $e');
-    }
+    // try {
+    //   await Share.share(shareContent, subject: 'Check out this hospital on Onshop!');
+    //   print('Sharing successful');
+    // } catch (e) {
+    //   print('Error while sharing: $e');
+    // }
   }
 
   void openMapLink(BuildContext context, String mapLink) async {

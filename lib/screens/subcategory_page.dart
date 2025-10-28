@@ -67,8 +67,7 @@ class _SubcategoryGridPageState extends State<SubcategoryGridPage> {
     List<Color> appBarGradientColors;
     String appBarIconAsset;
 
-    if (widget.collectionName == '0' ||
-        widget.collectionName == '0') {
+    if (widget.collectionName == '0' || widget.collectionName == '0') {
       appBarGradientColors = [
         const Color.fromARGB(255, 41, 219, 255),
         Colors.white,
@@ -85,48 +84,48 @@ class _SubcategoryGridPageState extends State<SubcategoryGridPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-  backgroundColor: Colors.transparent,
-  toolbarHeight: 70,
-  elevation: 0,
-  flexibleSpace: Container(
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        colors: appBarGradientColors,
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ),
-    ),
-    child: Padding(
-      padding: const EdgeInsets.only(top: 20),
-      child: Row(
-        children: [
-          const SizedBox(width: 45),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.asset(appBarIconAsset, width: 50),
+        backgroundColor: Colors.transparent,
+        toolbarHeight: 70,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: appBarGradientColors,
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: Row(
               children: [
-                Text(
-                   'On Shop',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(width: 45),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(appBarIconAsset, width: 50),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'On Shop',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
-    ),
-  ),
-),
       body: FutureBuilder<List<String>>(
         future: _fetchBannerImageUrls(),
         builder: (context, bannerSnapshot) {
@@ -243,11 +242,11 @@ class _SubcategoryGridPageState extends State<SubcategoryGridPage> {
                       return const Center(child: CircularProgressIndicator());
                     } else if (subcategorySnapshot.hasError) {
                       return Center(
-                          child:
-                              Text('Error: ${subcategorySnapshot.error}'));
+                          child: Text('Error: ${subcategorySnapshot.error}'));
                     } else if (!subcategorySnapshot.hasData ||
                         subcategorySnapshot.data!.isEmpty) {
-                      return const Center(child: Text('No subcategories found.'));
+                      return const Center(
+                          child: Text('No subcategories found.'));
                     }
 
                     final subcategories = subcategorySnapshot.data!;
@@ -258,7 +257,7 @@ class _SubcategoryGridPageState extends State<SubcategoryGridPage> {
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
+                          crossAxisCount: 4,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
                           childAspectRatio: 1,
@@ -268,15 +267,16 @@ class _SubcategoryGridPageState extends State<SubcategoryGridPage> {
                           final subcategory = subcategories[index];
                           return GestureDetector(
                             onTap: () {
-                             Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => ListingPage(
-      subcategory: subcategory['name'],
-      collectionName: widget.collectionName, // Pass the collection name
-    ),
-  ),
-);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ListingPage(
+                                    subcategory: subcategory['name'],
+                                    collectionName: widget
+                                        .collectionName, // Pass the collection name
+                                  ),
+                                ),
+                              );
                             },
                             child: Container(
                               decoration: BoxDecoration(
@@ -284,7 +284,8 @@ class _SubcategoryGridPageState extends State<SubcategoryGridPage> {
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(
                                   width: .5,
-                                  color: const Color.fromARGB(255, 217, 217, 217),
+                                  color:
+                                      const Color.fromARGB(255, 217, 217, 217),
                                 ),
                               ),
                               child: Column(
@@ -316,7 +317,7 @@ class _SubcategoryGridPageState extends State<SubcategoryGridPage> {
                                       color: Colors.grey,
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 2),
                                   Container(
                                     height: 36,
                                     alignment: Alignment.center,
@@ -328,7 +329,7 @@ class _SubcategoryGridPageState extends State<SubcategoryGridPage> {
                                         style: const TextStyle(
                                           color: Colors.black,
                                           fontWeight: FontWeight.w500,
-                                          fontSize: 11,
+                                          fontSize: 10,
                                         ),
                                         textAlign: TextAlign.center,
                                         maxLines: 2,

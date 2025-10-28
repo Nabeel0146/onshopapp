@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:onshopapp/screens/Products/sliderimageedit.dart';
-import 'package:share_plus/share_plus.dart';
+
 
 class ShopEditPage extends StatefulWidget {
   final String shopId;

@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:share_plus/share_plus.dart';
+
 
 class ActionButton extends StatelessWidget {
   final String label;
@@ -81,8 +81,19 @@ void openWhatsApp(BuildContext context, String whatsappNumber) async {
 
 void shareDetails(
     String title, String description, String phoneNumber) async {
-  final footer =
-      '\n\nShared from Onshop App\n\nDownload Onshop App now\nGoogle Playstore: https://play.google.com/store/apps/details?id=com.onshopin.onshopapp&pcampaignid=web_share  \nApp Store: https://apps.apple.com/in/app/on-shop/id6740747263  ';
+  final footer = '''
+Shared from Onshop,
+
+Download Onshop app now:
+Google Playstore: https://play.google.com/store/apps/details?id=com.onshopin.onshopapp&pcampaignid=web_share  
+App Store: https://apps.apple.com/in/app/on-shop/id6740747263  
+
+Download CityDotCom app for all city services like hospitals, jobs, workers, taxi etc..  
+[CityDotCom App Link]  
+
+Download Harithagramam app for Harithagramam products, homemade products, and many more..  
+[Harithagramam App Link]  
+''';
   final shareContent = '''
 $title
 
@@ -92,11 +103,11 @@ Contact: $phoneNumber
 $footer
 ''';
 
-  try {
-    await Share.share(shareContent, subject: 'Check out this item on Onshop!');
-    print('Sharing successful');
-  } catch (e) {
-    print('Error while sharing: $e');
-  }
+  // try {
+  //   await Share.share(shareContent, subject: 'Check out this item on Onshop!');
+  //   print('Sharing successful');
+  // } catch (e) {
+  //   print('Error while sharing: $e');
+  // }
 }
 

@@ -143,12 +143,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('asset/8880783.jpg'), // Replace with your background image asset path
-            fit: BoxFit.fitHeight,
-          ),
-        ),
+        
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

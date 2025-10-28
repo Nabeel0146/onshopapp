@@ -155,8 +155,14 @@ Widget buildOfferSection(BuildContext context) {
   );
 }
 
-Widget buildLargeCategoryTile(BuildContext context, String title,
-    String subtitle, String iconPath, Color color, String collectionName) {
+Widget buildLargeCategoryTile(
+  BuildContext context,
+  String title,
+  String subtitle,
+  String iconPath,
+  Color color,
+  String collectionName,
+) {
   return GestureDetector(
     onTap: () {
       Navigator.push(
@@ -168,24 +174,33 @@ Widget buildLargeCategoryTile(BuildContext context, String title,
       );
     },
     child: Container(
-      width: MediaQuery.of(context).size.width * 0.45, // Large size
-      height: 120,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+      width: MediaQuery.of(context).size.width * 0.92, // Large size
+      height: 100,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white, // White background
-        border: Border.all(color: Color.fromARGB(255, 215, 215, 215)),
+        border: Border.all(color: const Color.fromARGB(255, 100, 100, 100)),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.4), // Light shadow
+            color: Colors.amber,
             spreadRadius: 1,
             blurRadius: 5,
-            offset: Offset(0, 3), // Shadow direction
+            offset: const Offset(0, 3), // Shadow direction
           ),
         ],
       ),
       child: Row(
         children: [
+          // Image moved to left
+          Image.asset(
+            iconPath,
+            height: 55,
+            width: 55,
+          ),
+          const SizedBox(width: 12),
+
+          // Title & Subtitle
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,21 +214,23 @@ Widget buildLargeCategoryTile(BuildContext context, String title,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 1),
+                const SizedBox(height: 4),
                 Text(
                   subtitle,
                   style: const TextStyle(
                     color: Colors.black54,
-                    fontSize: 10,
+                    fontSize: 12,
                   ),
                 ),
               ],
             ),
           ),
-          Image.asset(
-            iconPath, // Path to the icon asset
-            height: 55, // Adjusted icon size
-            width: 55,
+
+          // Right Arrow Icon
+          const Icon(
+            Icons.arrow_forward_ios,
+            color: Colors.black54,
+            size: 18,
           ),
         ],
       ),
@@ -275,7 +292,7 @@ Widget buildSmallCategoryTile(BuildContext context, String title,
           ),
           SizedBox(height: 5),
           Padding(
-            padding: const EdgeInsets.only(right:3, left: 3),
+            padding: const EdgeInsets.only(right: 3, left: 3),
             child: Text(
               title,
               textAlign: TextAlign.center,

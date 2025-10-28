@@ -183,7 +183,7 @@ class _RegisterPageState extends State<RegisterPage> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color.fromARGB(255, 41, 219, 255),
+                  const Color.fromARGB(255, 255, 181, 9),
       Colors.white,
                 ],
                 begin: Alignment.topCenter,
@@ -206,7 +206,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       padding: const EdgeInsets.only(top: 48.0),
                       child: Center(
                         child: Image.asset(
-                          'asset/citylogoapp.png',
+                          'asset/onshopnewcurvedlogo.png',
                           height: 200,
                           width: 200,
                           fit: BoxFit.contain,

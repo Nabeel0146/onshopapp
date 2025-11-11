@@ -111,8 +111,9 @@ class HospitalProfilePage extends StatelessWidget {
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Color.fromARGB(255, 255, 185, 41),
-                      Colors.white,
+                     
+                   const Color.fromARGB(255, 41, 219, 255),
+      Colors.white,
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -124,7 +125,7 @@ class HospitalProfilePage extends StatelessWidget {
                     children: [
                       const SizedBox(width: 45),
                       ClipRRect(
-                        child: Image.asset("asset/citydotcomfinallogopCURVED.png", width: 50),
+                        child: Image.asset("asset/citydotcomlogonew copy.png", width: 50),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -133,7 +134,7 @@ class HospitalProfilePage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
                             Text(
-                              'On Shop',
+                              'City Dot Com',
                               style: TextStyle(
                                 color: Colors.black,
                                 fontSize: 18,
@@ -519,7 +520,7 @@ class HospitalProfilePage extends StatelessWidget {
     Color borderColor = Colors.black,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(left: 2, right: 2),
+      padding: const EdgeInsets.only(left: 1, right: 1),
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(

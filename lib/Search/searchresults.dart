@@ -3,15 +3,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:onshopapp/screens/Products/Shopprofile.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /* =====================================================
  *  MAIN SEARCH RESULTS PAGE
- * ===================================================== */
-/* =====================================================
- *  SEARCH RESULTS PAGE  –  uses the SAME ShopProfilePage
  * ===================================================== */
 class SearchResultsPage extends StatefulWidget {
   const SearchResultsPage({Key? key}) : super(key: key);
@@ -69,7 +65,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
           .map((d) => Shop.fromFirestore(d.id, d.data()))
           .where((shop) =>
               shop.name.toLowerCase().contains(q) ||
-              shop.shopcode.toLowerCase().contains(q)) // <-- NEW
+              shop.shopcode.toLowerCase().contains(q)) // <-- Searching both name and shopcode
           .toList();
 
       final citySnap =
@@ -89,7 +85,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     }
   }
 
-  /* ----------  LOCKED-SHOP LOGIC (same UX as ListingPage)  ---------- */
+  /* ----------  LOCKED-SHOP LOGIC  ---------- */
   Future<void> _checkCustomerID(Shop shop) async {
     // 1.  Not associated → open directly
     if (!shop.associate) {
@@ -118,7 +114,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
       return;
     }
 
-    // ---------- show the SAME dialog you use in ListingPage ----------
+    // ---------- show dialog ----------
     String? enteredId;
     await showDialog<String>(
       context: context,
@@ -218,12 +214,12 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     }
   }
 
-  // void _shareDetails(String title, String description, String phoneNumber) {
-  //   final footer =
-  //       '\n\nShared from Onshop App. Download Onshop App now from Google Playstore / App Store';
-  //   Share.share('$title\n\n$description\n\nContact: $phoneNumber$footer',
-  //       subject: 'Check out this shop on Onshop!');
-  // }
+  void _shareDetails(String title, String description, String phoneNumber) {
+    final footer =
+        '\n\nShared from Onshop App. Download Onshop App now from Google Playstore / App Store';
+    // Share.share('$title\n\n$description\n\nContact: $phoneNumber$footer',
+    //     subject: 'Check out this shop on Onshop!');
+  }
 
   /* ----------  UI  ---------- */
   @override
@@ -269,7 +265,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
               controller: _searchController,
               onChanged: _search,
               decoration: InputDecoration(
-                hintText: 'Search shops...',
+                hintText: 'Search shops by name or shop code...',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -285,14 +281,15 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                 : ListView(
                     children: [
                       if (_shops.isNotEmpty) ...[
-                        // ..._shops.map((shop) => _ShopTile(
-                        //       shop: shop,
-                        //       onTap: () => _checkCustomerID(shop),
-                        //       onCall: () => _makeCall(shop.mobile),
-                        //       onWhatsApp: () => _openWhatsApp(shop.whatsapp),
-                        //       // onShare: () => _shareDetails(
-                        //       //     shop.name, shop.description, shop.mobile),
-                        //     )),
+                        const _SectionTitle('Shops'),
+                        ..._shops.map((shop) => _ShopTile(
+                              shop: shop,
+                              onTap: () => _checkCustomerID(shop),
+                              onCall: () => _makeCall(shop.mobile),
+                              onWhatsApp: () => _openWhatsApp(shop.whatsapp),
+                              onShare: () => _shareDetails(
+                                  shop.name, shop.description, shop.mobile),
+                            )),
                       ],
                       if (_cities.isNotEmpty) ...[
                         const _SectionTitle('Cities'),
@@ -300,6 +297,7 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
                               city: city,
                               onTap: () {
                                 debugPrint('selected city: ${city.name}');
+                                // You can add navigation to city-specific shops here
                               },
                             )),
                       ],
@@ -328,18 +326,19 @@ class Shop {
   final String customerid;
   final String shopcode;
 
-  Shop(
-      {required this.id,
-      required this.name,
-      required this.description,
-      required this.mobile,
-      required this.whatsapp,
-      this.imageUrl,
-      required this.city,
-      required this.associate,
-      required this.lock,
-      required this.customerid,
-      required this.shopcode});
+  Shop({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.mobile,
+    required this.whatsapp,
+    this.imageUrl,
+    required this.city,
+    required this.associate,
+    required this.lock,
+    required this.customerid,
+    required this.shopcode,
+  });
 
   factory Shop.fromFirestore(String id, Map<String, dynamic> json) => Shop(
         id: id,
@@ -355,7 +354,6 @@ class Shop {
         customerid: json['customerid'] ?? '',
       );
 
-  // ------  NEW: convert to Map so ShopProfilePage (used by ListingPage) can consume it  ------
   Map<String, dynamic> toMap() {
     return {
       'documentId': id,
@@ -369,7 +367,7 @@ class Shop {
       'lock': lock,
       'shopcode': shopcode,
       'customerid': customerid,
-      'shopid': id, // ListingPage expects shopid for the customer-id cache
+      'shopid': id,
     };
   }
 }
@@ -385,7 +383,7 @@ class City {
 }
 
 /* =====================================================
- *  WIDGET HELPERS  (unchanged)
+ *  WIDGET HELPERS
  * ===================================================== */
 class _SectionTitle extends StatelessWidget {
   final String text;
